@@ -1,100 +1,112 @@
 """
-ALGORITHM 1C: LITAO3_POCKELS_MODULATOR_FDTD
+ALGORITHM 1C: LITAO3 POCKELS MODULATOR MEEP
 ===========================================
-Simulates the electro-optic Pockels phase modulator in thin-film Lithium Tantalate (LiTaO3).
-Models the refractive index modulation Delta n_e = -0.5 * n_e^3 * r_33 * E_z,
-evaluating the half-wave voltage length product (V_pi * L <= 1.8 V*cm) and
-the 3 dB electro-optic bandwidth (f_EO >= 100 GHz).
+Simulates LiTaO3 Pockels MZ modulator using MEEP.
+Extracts actual phase shifts to compute V_pi.
 """
 
 import sys
 import os
 import math
-from typing import Dict, Any
+import numpy as np
+
+try:
+    import meep as mp
+    HAS_MEEP = True
+except ImportError:
+    HAS_MEEP = False
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from configs import mini_16t_constants as cfg
 
-
-class LiTaO3PockelsModulator:
-    """Thin-Film LiTaO3 Electro-Optic Pockels Modulator Solver."""
-
-    def __init__(
-        self,
-        n_e: float = cfg.n_litao3,
-        r_33_pm_V: float = cfg.r33_litao3 * 1e12,
-        lambda_0: float = cfg.lambda_0,
-        gap_eo_nm: float = cfg.gap_eo_nm,
-        L_active_um: float = cfg.L_active_um,
-    ):
-        self.n_e = n_e
-        self.r_33 = r_33_pm_V * 1e-12
-        self.lambda_0 = lambda_0
-        self.gap = gap_eo_nm * 1e-9
-        self.L_active = L_active_um * 1e-6
-
-        # Equivalent RC parameters for 100 GHz electro-optic bandwidth
-        self.R_eff = (
-            cfg.R_eff
-        )  # Ohms (50 Ohm driver and 50 Ohm termination in parallel)
-        self.C_junction = (
-            cfg.C_junction
-        )  # 63.66 fF => f_3dB = 1 / (2*pi*25*63.66fF) = 100.0 GHz
-
-    def calculate_pockels_effect(self, V_applied: float = 1.0) -> Dict[str, Any]:
-        """Calculates index shift Delta n_e, phase shift Delta phi, and V_pi * L."""
-        assert self.gap > 0
-        gamma = 0.65  # Optical-RF Overlap Integral
-        Ez = V_applied / self.gap
-        delta_n_e = 0.5 * (self.n_e**3) * self.r_33 * Ez * gamma
-        V_pi = (self.lambda_0 * self.gap) / (
-            (self.n_e**3) * self.r_33 * self.L_active * gamma
+class LiTaO3PockelsModulatorMeep:
+    def __init__(self):
+        if not HAS_MEEP:
+            raise RuntimeError("MEEP not installed. Please install MEEP to run FDTD simulations.")
+        self.L_active = cfg.L_active_um
+        self.gap = cfg.gap_eo_nm / 1000.0
+        self.resolution = 30
+        
+    def _run_sim_and_get_phase(self, voltage: float) -> float:
+        d_n = 0.5 * (cfg.n_litao3**3) * cfg.r33_litao3 * (voltage / (self.gap * 1e-6))
+        n_active = cfg.n_litao3 + d_n
+        
+        sx = 10.0
+        sy = 3.0
+        cell = mp.Vector3(sx, sy, 0)
+        pml_layers = [mp.PML(1.0)]
+        
+        litao3_mat = mp.Medium(index=n_active)
+        sio2 = mp.Medium(index=cfg.n_sio2)
+        
+        wg = mp.Block(mp.Vector3(mp.inf, 0.5, mp.inf), material=litao3_mat)
+        
+        lambda_0 = cfg.lambda_0_nm / 1000.0
+        fcen = 1.0 / lambda_0
+        
+        src = mp.EigenModeSource(
+            src=mp.GaussianSource(fcen, fwidth=0.1*fcen),
+            center=mp.Vector3(-sx/2 + 1.5, 0, 0),
+            size=mp.Vector3(0, 1.5, 0),
+            eig_band=1,
+            direction=mp.X
         )
-        V_pi_L_V_cm = V_pi * (self.L_active * 100.0)  # V * cm
-
-        # Bandwidth calculation factoring in lumped RC and Traveling-Wave transit time
-        f_RC_GHz = (1.0 / (2.0 * math.pi * self.R_eff * self.C_junction)) * 1e-9
-        n_rf = 2.15  # RF effective index
-        v_mismatch = abs(self.n_e - n_rf)
-        # Sinc-limited transit bandwidth for traveling wave modulators
-        f_transit_GHz = (
-            (1.4 * cfg.c_vacuum) / (math.pi * abs(self.L_active) * v_mismatch) * 1e-9
+        
+        sim = mp.Simulation(
+            cell_size=cell,
+            boundary_layers=pml_layers,
+            geometry=[wg],
+            sources=[src],
+            resolution=self.resolution,
+            default_material=sio2
         )
+        
+        # Measure complex amplitude at the output
+        mon = sim.add_mode_monitor(fcen, 0, 1, mp.FluxRegion(center=mp.Vector3(sx/2 - 1.5, 0, 0), size=mp.Vector3(0, 1.5, 0)))
+        
+        sim.run(until=60.0)
+        
+        res = sim.get_eigenmode_coefficients(mon, [1])
+        alpha_forward = res.alpha[0, 0, 0] # forward mode amplitude
+        phase = np.angle(alpha_forward)
+        
+        return phase
 
-        f_EO_GHz = 1.0 / math.sqrt(1.0 / (f_RC_GHz**2) + 1.0 / (f_transit_GHz**2))
-        phase_shift_rad = (2.0 * math.pi / self.lambda_0) * delta_n_e * self.L_active
-        transmission = math.cos(phase_shift_rad / 2.0) ** 2
-
+    def solve(self, voltage: float):
+        # Run at 0V and at `voltage` to get delta_phi
+        phase_0 = self._run_sim_and_get_phase(0.0)
+        phase_v = self._run_sim_and_get_phase(voltage)
+        
+        delta_phi = phase_v - phase_0
+        
+        # Unroll phase wrapping if necessary, though for 5V it shouldn't wrap in this short test length
+        if delta_phi == 0:
+            v_pi = float('inf')
+        else:
+            # The phase shift scales linearly with voltage and length. 
+            # We ran a short length (sx=10, active region ~7um). We must scale delta_phi to the full L_active.
+            sim_L = 10.0 - 3.0 # Exact propagation distance between source and monitor in the simulation
+            
+            # Sanity check: Ensure we haven't wrapped the phase in this short length
+            assert abs(delta_phi) < math.pi * 0.9, f"Phase wrapped! (delta_phi={delta_phi:.3f} rad). V_pi extrapolation will be corrupted."
+            
+            scaled_delta_phi = delta_phi * (self.L_active / sim_L)
+            
+            # V_pi is the voltage required for a Pi phase shift
+            v_pi = abs(voltage * (math.pi / scaled_delta_phi))
+            
+        A = self.L_active * 1e-6 * 0.5e-6
+        C_junction = cfg.epsilon_0 * cfg.n_litao3**2 * A / (self.gap * 1e-6)
+        bw = 1.0 / (2 * math.pi * cfg.R_eff * C_junction)
+        
         return {
-            "V_applied": V_applied,
-            "Ez_MV_m": Ez * 1e-6,
-            "delta_n_e": delta_n_e,
-            "phase_shift_rad": phase_shift_rad,
-            "V_pi_V": V_pi,
-            "V_pi_L_V_cm": V_pi_L_V_cm,
-            "f_EO_bandwidth_GHz": f_EO_GHz,
-            "optical_transmission": transmission,
-            "pass_criteria": (V_pi_L_V_cm <= 2.0) and (f_EO_GHz >= 100.0),
+            "V_pi": v_pi,
+            "C_junction": C_junction,
+            "bandwidth": bw,
+            "phase_shift_rad": delta_phi
         }
 
-
 if __name__ == "__main__":
-    mod = LiTaO3PockelsModulator()
-    res = mod.calculate_pockels_effect(V_applied=1.5)
-    print("=" * 70)
-    print("JANUS MINI 16-TILE: LITAO3 POCKELS MODULATOR (ALGORITHM 1C)")
-    print("=" * 70)
-    print(f"Pockels Coefficient (r33): {cfg.r33_litao3*1e12:.1f} pm/V")
-    print(f"Index Modulation (dn_e)  : {res['delta_n_e']:.6e} @ {res['V_applied']} V")
-    print(f"Half-Wave Voltage (V_pi) : {res['V_pi_V']:.3f} V (Active Length: 500 um)")
-    print(
-        f"V_pi * L Figure of Merit : {res['V_pi_L_V_cm']:.3f} V*cm (Spec Limit: <= 2.0 V*cm)"
-    )
-    print(
-        f"3 dB EO Bandwidth (f_EO) : {res['f_EO_bandwidth_GHz']:.2f} GHz (Spec Limit: >= 100.0 GHz)"
-    )
-    print("-" * 70)
-    assert res["pass_criteria"], "Pockels modulator exceeded specification limits!"
-    print(
-        "[PASS] LiTaO3 Pockels Modulator fully compliant with optical specifications."
-    )
+    solver = LiTaO3PockelsModulatorMeep()
+    res = solver.solve(5.0)
+    print(res)

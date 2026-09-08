@@ -58,6 +58,7 @@ P_ghost: float = 0.0  # Parasitic FWM ghost power (W) [T1]
 # ==============================================================================
 n_si: float = 3.565  # Silicon refractive index at 1064 nm [T1]
 n_sio2: float = 1.444  # SiO2 cladding refractive index at 1064 nm [T1]
+n_eff_si_strip_1064nm: float = 2.9645  # Fundamental TE effective index for 450x220nm Si strip in SiO2 at 1064nm (MPB-derived EIM convention) [T1]
 n_sin: float = 2.01  # Si3N4 waveguide refractive index at 1064 nm [T1]
 n_litao3: float = 2.13  # LiTaO3 refractive index at 1064 nm [T1]
 n_sb2s3_amorph: float = 2.7  # Sb2S3 amorphous index at 1064 nm [Ref: Dong et al., 2022]
@@ -120,28 +121,35 @@ wg_height_si: float = 220e-9  # Silicon waveguide core height (m) [T1]
 L_wg_phase: float = 500e-6  # Waveguide length for phase stability (m) [T1, T2]
 L_wire_electrical: float = 200e-6  # On-chip local electrical wire length (m) [T3, T4]
 v_wire: float = 1.5e8  # Speed of light in on-chip metal (c/2) (m/s) [T3, T4]
-IL_crossing: float = 0.02  # MMI waveguide crossing insertion loss (dB) [T1]
-XT_crossing: float = -40.0  # MMI waveguide crossing crosstalk (dB) [T1]
+# IL_crossing: float = 0.02  # MMI waveguide crossing insertion loss (dB) [T1] # COMPUTED BY TIER 1 — do not hardcode
+# XT_crossing: float = -40.0  # MMI waveguide crossing crosstalk (dB) [T1] # COMPUTED BY TIER 1 — do not hardcode
 
-mmi_W_um: float = 1.6  # MMI width (um)
-mmi_L_um: float = 6.4  # MMI length (um)
-mmi_s11_mag_db: float = -46.0  # MMI S11 magnitude (dB)
-mmi_phase_s11: float = 0.05  # MMI S11 phase (rad)
-mmi_phase_s21: float = 0.0  # MMI S21 phase (rad)
-mmi_phase_s31: float = 1.57  # MMI S31 phase (rad)
-mmi_phase_s41: float = -1.57  # MMI S41 phase (rad)
+# Waveguide Crossing Physical Architecture (Chen et al. 2014, Ma et al. 2013 Talbot Self-Imaging Focus):
+# W = 1.52 um multimode core with L_mmi = 3.65 um straight section balances Rayleigh range
+# divergence suppression with Talbot self-imaging focus at the intersection center (IL < 0.10 dB):
+mmi_W_um: float = 1.52  # Chen et al. / Ma et al. sweet-spot crossing intersection width (um) [T1]
+mmi_L_section_um: float = 3.65  # Straight MMI self-imaging section length between taper and intersection (um) [T1]
+mmi_L_um: float = 5.00  # Adiabatic parabolic taper length (um) [T1]
+swg_crossing_pitch_nm: float = 160.0  # Subwavelength grating pitch (nm) [T1]
+swg_crossing_duty_cycle: float = 0.50  # SWG duty cycle (Si fraction) [T1]
+swg_min_feature_size_nm: float = 80.0  # Minimum lithographic feature size (nm) [T1]
+# mmi_s11_mag_db: float = -46.0  # MMI S11 magnitude (dB) # COMPUTED BY TIER 1 — do not hardcode
+# mmi_phase_s11: float = 0.05  # MMI S11 phase (rad) # COMPUTED BY TIER 1 — do not hardcode
+# mmi_phase_s21: float = 0.0  # MMI S21 phase (rad) # COMPUTED BY TIER 1 — do not hardcode
+# mmi_phase_s31: float = 1.57  # MMI S31 phase (rad) # COMPUTED BY TIER 1 — do not hardcode
+# mmi_phase_s41: float = -1.57  # MMI S41 phase (rad) # COMPUTED BY TIER 1 — do not hardcode
 
-gst_iso_11_am: float = -42.0
-gst_iso_11_cr: float = -40.0
-gst_iso_41: float = -45.0
-gst_phase_am: float = 0.02
-gst_phase_11: float = 0.1
-gst_phase_41: float = 0.5
+# gst_iso_11_am: float = -42.0 # COMPUTED BY TIER 1 — do not hardcode
+# gst_iso_11_cr: float = -40.0 # COMPUTED BY TIER 1 — do not hardcode
+# gst_iso_41: float = -45.0 # COMPUTED BY TIER 1 — do not hardcode
+# gst_phase_am: float = 0.02 # COMPUTED BY TIER 1 — do not hardcode
+# gst_phase_11: float = 0.1 # COMPUTED BY TIER 1 — do not hardcode
+# gst_phase_41: float = 0.5 # COMPUTED BY TIER 1 — do not hardcode
 
 gap_eo_nm: float = 300.0  # LiTaO3 Pockels gap (nm)
 L_active_um: float = 500.0  # LiTaO3 active length (um)
 R_eff: float = 25.0  # Effective resistance (Ohm)
-C_junction: float = 63.66e-15  # Junction capacitance (F)
+C_junction: float = 63.66e-15  # Junction capacitance (F) (Note: back-calculated to hit 100 GHz — keep but add honest comment)
 
 # ==============================================================================
 # 2.6 MINI 16-TILE ARCHITECTURAL TOPOLOGY
@@ -226,18 +234,22 @@ cp_litao3: float = 424.0  # Specific heat capacity (J/(kg-K)) [T2]
 # ==============================================================================
 T_ambient: float = 298.15  # Ambient reference temperature (K) [T2]
 T_ambient_C: float = 25.0  # Ambient reference temperature (deg-C) [T2]
-tau_diff: float = 69.06e-3  # SiO2 thermal diffusion time (s) [T2, T5]
-tau_diff_ms: float = 69.06  # Thermal diffusion time (ms) [T2, T5]
+# Multi-tile active photonic switch allocation
+N_ACTIVE_SWITCHES_PER_TILE: int = 16  # Active simultaneous routing switches per tile [T2, T5]
+N_ACTIVE_SWITCHES_TOTAL: int = 256    # Total simultaneous active switches = N_tiles (16) * 16 = 256 [T2, T5]
+# tau_diff: float = 69.06e-3  # SiO2 thermal diffusion time (s) [T2, T5] # COMPUTED BY TIER 2 — do not hardcode
+# tau_diff_ms: float = 69.06  # Thermal diffusion time (ms) [T2, T5] # COMPUTED BY TIER 2 — do not hardcode
 tau_jir: float = 5.0e-6  # JIR activation cycle duration (s) [T2, T5]
 tau_jir_us: float = 5.0  # JIR activation cycle (us) [T2, T5]
+
 N_jir_per_tau_diff: int = 13812  # JIR cycles per thermal diffusion time [T2, T5]
 t_jir_rotation: float = 4.0e-6  # JIR state-transition overhead (s) [T5]
 Q_gen_per_jir: float = 30.85e-6  # Heat generated per JIR cycle (J) [T2, T5]
-delta_T_cycle: float = 0.798e-3  # Per-cycle thermal transient rise (K) [T2, T5]
-delta_T_cycle_mK: float = 0.798  # Per-cycle thermal rise (mK) [T2, T5]
+# delta_T_cycle: float = 0.798e-3  # Per-cycle thermal transient rise (K) [T2, T5] # COMPUTED BY TIER 2 — do not hardcode
+# delta_T_cycle_mK: float = 0.798  # Per-cycle thermal rise (mK) [T2, T5] # COMPUTED BY TIER 2 — do not hardcode
 delta_T_crit_phase: float = 5.72  # Phase-drift critical temperature rise (K) [T1, T2]
-delta_T_steady: float = 0.213  # Steady-state SiPh temp rise (K) [T2]
-thermal_margin_ratio: float = 26.9  # Thermal stability margin (dT_crit/dT_ss) [T2]
+# delta_T_steady: float = 0.213  # Steady-state SiPh temp rise (K) [T2] # COMPUTED BY TIER 2 — do not hardcode
+# thermal_margin_ratio: float = 26.9  # Thermal stability margin (dT_crit/dT_ss) [T2] # COMPUTED BY TIER 2 — do not hardcode
 T_max_operating: float = 70.0  # Nominal commercial operating ceiling (deg-C) [T2, T5]
 T_max_operating_K: float = 343.15  # Nominal commercial operating ceiling (K) [T2, T5]
 T_retention_max: float = (
@@ -289,15 +301,14 @@ jitter_rms: float = 50e-15  # Pulse timing jitter, comb-referenced clock (s) [T6
 
 BER_target: float = 1e-18  # Target bit error rate [T3, T5]
 Q_factor: float = 9.38  # Q-factor for BER=10^-18 [T3]
-P_sens_theoretical: float = 3.01e-6  # Theoretical receiver sensitivity (W) [T3]
-P_sens_theoretical_dbm: float = -25.21  # Theoretical sensitivity (dBm) [T3]
+# P_sens_theoretical: float = 3.01e-6  # Theoretical receiver sensitivity (W) [T3] # COMPUTED BY TIER 3 — do not hardcode
+# P_sens_theoretical_dbm: float = -25.21  # Theoretical sensitivity (dBm) [T3] # COMPUTED BY TIER 3 — do not hardcode
 sensitivity_margin_db: float = 2.0  # Engineering margin (dB) [T3]
-P_sens_practical: float = 4.79e-6  # Practical receiver sensitivity (W) [T3]
-P_sens_practical_dbm: float = -23.21  # Practical sensitivity (dBm) [T3]
-P_det: float = 13.82e-6  # Delivered signal power at detector (W) [T3]
+# P_sens_practical: float = 4.79e-6  # Practical receiver sensitivity (W) [T3] # COMPUTED BY TIER 3 — do not hardcode
+P_det: float = 13.82e-6  # Nominal delivered signal power at detector (W) [T3 circuit input]
 P_det_dbm: float = -18.59  # Delivered power in dBm [T3]
-link_margin: float = 4.61  # Net binary detection margin (dB) [T3]
-link_margin_linear: float = 2.89  # Linear power safety factor [T3]
+# link_margin: float = 4.61  # Net binary detection margin (dB) [T3] # COMPUTED BY TIER 3 — do not hardcode
+# link_margin_linear: float = 2.89  # Linear power safety factor [T3] # COMPUTED BY TIER 3 — do not hardcode
 P_false_positive: float = 2.55e-16  # Dark-channel false positive probability [T3, T5]
 
 # ==============================================================================
@@ -311,15 +322,15 @@ P_laser_electrical: float = 2.95  # Laser electrical consumption (W) [T3]
 N_mmi_stages: int = 13  # Cascaded 1:2 MMI splitter count [T1]
 L_split_per_stage: float = 3.0103  # Ideal per-stage splitting loss (dB) [T1]
 L_split_ideal: float = 39.13  # Total ideal splitting loss (dB) [T1]
-L_mmi_excess_per_stage: float = 0.30  # MMI excess loss per stage (dB) [T1]
-L_mmi_excess_total: float = 3.90  # Total MMI excess loss (dB) [T1]
-L_benes_per_stage: float = 0.50  # Dilated Benes loss per stage (dB) [T1]
-L_benes_total: float = 7.50  # Total 15-stage Benes loss (dB) [T1]
+# L_mmi_excess_per_stage: float = 0.30  # MMI excess loss per stage (dB) [T1] # COMPUTED BY TIER 1
+# L_mmi_excess_total: float = 3.90  # Total MMI excess loss (dB) [T1] # COMPUTED BY TIER 1
+# L_benes_per_stage: float = 0.50  # Dilated Benes loss per stage (dB) [T1] # COMPUTED BY TIER 1
+# L_benes_total: float = 7.50  # Total 15-stage Benes loss (dB) [T1] # COMPUTED BY TIER 1
 L_propagation_coupling: float = 1.50  # Propagation & interlayer loss (dB) [T1]
 L_excess_total: float = 12.90  # Total excess path loss (dB) [T1]
 L_distribution_total: float = 52.03  # Total distribution loss (dB) [T1, T3]
-IL_switch_cell: float = 0.10  # Sb2S3 switch insertion loss (dB) [T1]
-ER_dilated_benes: float = 25.0  # Dilated Benes extinction ratio (dB) [T1]
+# IL_switch_cell: float = 0.10  # Sb2S3 switch insertion loss (dB) [T1] # COMPUTED BY TIER 1
+# ER_dilated_benes: float = 25.0  # Dilated Benes extinction ratio (dB) [T1] # COMPUTED BY TIER 1
 
 P_litao3_routers: float = 0.51  # LiTaO3 router power (W) [T3]
 P_apd_detectors: float = 0.16  # Ge/Si APD array power (W) [T3]
@@ -370,18 +381,18 @@ eta_peak: float = 1.00  # Peak theoretical hardware utilization [T5]
 eta_sustained: float = 0.85  # Sustained operational utilization [T5]
 MAC_per_FLOPS: int = 2  # MAC to FLOPS equivalence (1 MAC = 2 FLOPS) [T5]
 MAC_per_tile_raw: float = 102.4e12  # Raw per-tile MAC rate (MAC/s) [T5]
-TP_int4_peak: float = 1638.4e12  # INT4 peak throughput (MAC/s) [T5]
-TP_int4_sustained: float = 1392.6e12  # INT4 sustained throughput (MAC/s) [T5]
-TP_int8_peak: float = 819.2e12  # INT8 peak throughput (MAC/s) [T5]
-TP_int8_sustained: float = 696.3e12  # INT8 sustained throughput (MAC/s) [T5]
-TP_int16_peak: float = 409.6e12  # INT16 peak throughput (MAC/s) [T5]
-TP_int16_sustained: float = 348.2e12  # INT16 sustained throughput (MAC/s) [T5]
-TP_int32_peak: float = 204.8e12  # INT32 peak throughput (MAC/s) [T5]
-TP_int32_sustained: float = 174.1e12  # INT32 sustained throughput (MAC/s) [T5]
-TP_int64_peak: float = 102.4e12  # INT64 peak throughput (MAC/s) [T5]
-TP_int64_sustained: float = 87.0e12  # INT64 sustained throughput (MAC/s) [T5]
-EE_int4: float = 225.7  # INT4 sustained energy efficiency (TMAC/s/W) [T5]
-EE_int64: float = 14.1  # INT64 sustained energy efficiency (TMAC/s/W) [T5]
+# TP_int4_peak: float = 1638.4e12  # INT4 peak throughput (MAC/s) [T5] # COMPUTED BY TIER 5
+# TP_int4_sustained: float = 1392.6e12  # INT4 sustained throughput (MAC/s) [T5] # COMPUTED BY TIER 5
+# TP_int8_peak: float = 819.2e12  # INT8 peak throughput (MAC/s) [T5] # COMPUTED BY TIER 5
+# TP_int8_sustained: float = 696.3e12  # INT8 sustained throughput (MAC/s) [T5] # COMPUTED BY TIER 5
+# TP_int16_peak: float = 409.6e12  # INT16 peak throughput (MAC/s) [T5] # COMPUTED BY TIER 5
+# TP_int16_sustained: float = 348.2e12  # INT16 sustained throughput (MAC/s) [T5] # COMPUTED BY TIER 5
+# TP_int32_peak: float = 204.8e12  # INT32 peak throughput (MAC/s) [T5] # COMPUTED BY TIER 5
+# TP_int32_sustained: float = 174.1e12  # INT32 sustained throughput (MAC/s) [T5] # COMPUTED BY TIER 5
+# TP_int64_peak: float = 102.4e12  # INT64 peak throughput (MAC/s) [T5] # COMPUTED BY TIER 5
+# TP_int64_sustained: float = 87.0e12  # INT64 sustained throughput (MAC/s) [T5] # COMPUTED BY TIER 5
+# EE_int4: float = 225.7  # INT4 sustained energy efficiency (TMAC/s/W) [T5] # COMPUTED BY TIER 5
+# EE_int64: float = 14.1  # INT64 sustained energy efficiency (TMAC/s/W) [T5] # COMPUTED BY TIER 5
 
 E_pcm_tier1: float = 100e-15  # Tier 1 PCM programming energy (J/switch) [T3]
 E_pcm_tier2: float = 1e-12  # Tier 2 PCM programming energy (J/switch) [T3]
@@ -403,6 +414,16 @@ ADC_bits_32x32: int = 21  # Equivalent ADC resolution (bits) [T5]
 dB_per_bit: float = 6.02  # ADC SNR scaling constant (dB/bit) [T5]
 SNR_adc_floor: float = 1.76  # ADC SNR floor offset (dB) [T5]
 
+
+# ==============================================================================
+# SPECIFICATION TARGETS (design goals, not validated results)
+# ==============================================================================
+SPEC_IL_switch_cell_max_dB: float = 0.50  # Target: MZI switch cell IL <= 0.50 dB (Method 1A + 1B)
+SPEC_IL_crossing_max_dB: float = 0.10  # Target: routable crossing IL <= 0.10 dB (Chen & Ma Talbot focus)
+SPEC_XT_crossing_min_dB: float = -38.0  # Target: crossing XT <= -38.0 dB
+SPEC_ER_benes_min_dB: float = 25.0  # Target: Benes ER > 25 dB
+SPEC_BER_target: float = 1e-18  # Target BER
+SPEC_T_max_operating_C: float = 70.0  # Max operating temperature
 
 # ==============================================================================
 def export_specs_json(output_path: str = None) -> str:

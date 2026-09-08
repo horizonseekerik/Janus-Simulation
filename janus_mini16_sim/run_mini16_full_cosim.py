@@ -24,6 +24,7 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
+# Master Orchestrator import (Interface updated to handle computed results)
 from orchestrator.master_orchestrator import JanusMasterOrchestrator
 
 
@@ -126,11 +127,20 @@ def main():
         default=None,
         help="Custom destination filepath for the markdown verification report",
     )
+    parser.add_argument(
+        "--switch-topology",
+        type=str,
+        default="mzi",
+        choices=["mzi", "directional_coupler"],
+        help="Switch cell topology for Tier 1 ('mzi' [default] or 'directional_coupler')",
+    )
 
     args = parser.parse_args()
 
     orchestrator = JanusMasterOrchestrator(
-        verbose=args.verbose, output_dir=args.output_dir
+        verbose=args.verbose,
+        output_dir=args.output_dir,
+        switch_topology=args.switch_topology,
     )
 
     # 1. Custom Single Value
@@ -165,20 +175,17 @@ def main():
         tier_num = int(tier_choice)
         print(f"Running individual Tier {tier_num} simulation...")
         orchestrator.validate_global_constants()
-        if tier_num == 1:
-            res = orchestrator.run_tier1_optics()
-        elif tier_num == 2:
-            res = orchestrator.run_tier2_thermal()
-        elif tier_num == 3:
-            orchestrator.run_tier1_optics()
-            res = orchestrator.run_tier3_circuit()
-        elif tier_num == 4:
-            res = orchestrator.run_tier4_rtl()
-        elif tier_num == 5:
-            orchestrator.run_tier2_thermal()
-            orchestrator.run_tier3_circuit()
-            res = orchestrator.run_tier5_algorithms()
-        print(f"Tier {tier_num} execution completed successfully.")
+        tier_res = orchestrator.run_tier(tier_num)
+        print("\n" + "=" * 80)
+        print(f"  TIER {tier_num} VERIFICATION SUMMARY")
+        print("=" * 80)
+        for c in tier_res["checks"]:
+            status_sym = "[PASS]" if c["passed"] else "[FAIL]"
+            print(f"  {status_sym} Check {c['id']:02d}: {c['name']}")
+            print(f"         Target:   {c['target_spec']} ({c['threshold']})")
+            print(f"         Measured: {c['measured_value']}")
+            print(f"         Details:  {c['details']}\n")
+        print(f"Tier {tier_num} execution completed in {tier_res['execution_time_s']}s.")
         sys.exit(0)
 
 

@@ -1,0 +1,11 @@
+! ----- names for bodies -----
+$ VOL_CMOS_SUBSTRATE = 1
+$ VOL_SIO2_BUFFER = 2
+$ VOL_SIPH_STRATUM = 3
+$ VOL_HEAT_SPREADER1 = 4
+$ VOL_HEAT_SPREADER2 = 5
+$ VOL_TIM_GAP = 6
+! ----- names for boundaries -----
+$ SURF_HEAT_SINK = 1
+$ SURF_CMOS_BOTTOM = 2
+$ SURF_ACTIVE_HOTSPOT = 3

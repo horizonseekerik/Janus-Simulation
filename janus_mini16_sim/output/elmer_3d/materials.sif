@@ -1,0 +1,42 @@
+! ==============================================================================
+! PROJECT JANUS MINI (16-TILE): AUTHORITATIVE ELMER FEM MATERIALS
+! ==============================================================================
+! Single source of truth for 3D packaging multi-stratum materials in Project Janus.
+! Loaded and referenced directly by Elmer3DThermalPipeline in elmer_thermal_solver.py
+! and included via case.sif.
+!
+! Body-to-Material Mapping:
+!   Body 1 (Body_CMOS) -> Material 1 (Silicon)
+!   Body 2 (Body_SiO2) -> Material 2 (SiO2)
+!   Body 3 (Body_SiPh) -> Material 1 (Silicon) [Heated active stratum]
+!   Body 4 (Body_HS1)  -> Material 4 (Copper)
+!   Body 5 (Body_HS2)  -> Material 4 (Copper)
+!   Body 6 (Body_TIM)  -> Material 3 (TIM)
+
+Material 1
+  Name = "Silicon"
+  Heat Conductivity = 148.0
+  Density = 2330.0
+  Heat Capacity = 705.0
+End
+
+Material 2
+  Name = "SiO2"
+  Heat Conductivity = 1.38
+  Density = 2200.0
+  Heat Capacity = 703.0
+End
+
+Material 3
+  Name = "TIM"
+  Heat Conductivity = 3.0
+  Density = 2000.0
+  Heat Capacity = 1000.0
+End
+
+Material 4
+  Name = "Copper"
+  Heat Conductivity = 400.0
+  Density = 8960.0
+  Heat Capacity = 385.0
+End

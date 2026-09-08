@@ -1,0 +1,14 @@
+Metadata for SaveScalars file: ./scalars.dat
+Elmer version: 26.2
+Elmer revision: Release
+Elmer compilation date: 2026-08-05
+Solver input file: case.sif
+File started at: 2026/09/08 21:53:06
+ 
+Variables in columns of matrix: 
+   1: max: temperature
+   2: min: temperature
+   3: mean: temperature
+   4: volume: temperature
+   5: res: heater power scaling 1
+   6: res: heater power density 1

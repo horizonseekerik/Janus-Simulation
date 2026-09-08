@@ -2,9 +2,13 @@
 ALGORITHM 5E: RRNS_FAULT_INJECTION_AND_HEALING
 =============================================
 Simulates Redundant Residue Number System (RRNS) fault tolerance.
-Performs Monte Carlo physical error injection using the BER floor (10^-18),
-executes redundant channel parity verification, single-channel residue projection
-fault localization, and 100% mathematical error self-healing recovery.
+Performs accelerated Monte Carlo single-channel fault injection stress testing
+with configurable error probability (default 20-30%), executes redundant channel
+parity verification, single-channel residue projection fault localization,
+and validates mathematical error detection and correction recovery.
+
+Fault model: at most one residue channel is corrupted per trial.
+This validates single-error detection and correction within the defined model.
 """
 
 import sys
@@ -35,10 +39,13 @@ class RRNSSelfHealingEngine:
         Executes Monte Carlo trials injecting random residue errors and verifying
         single-channel recovery via projection elimination.
         """
+        random.seed(42)
         faults_injected = 0
         detected = 0
         corrected = 0
         false_alarms = 0
+        no_error_no_detect = 0
+        undetected_errors = 0
 
         # The maximum verifiable range for single-error correction is M_compute / max(m_i)
         valid_range = self.M_compute // max(self.compute_moduli)
@@ -98,15 +105,21 @@ class RRNSSelfHealingEngine:
                     corrected += 1
             else:
                 if not has_error:
-                    pass  # Correctly passed
+                    no_error_no_detect += 1
                 else:
-                    pass  # Undetected
+                    undetected_errors += 1
 
         detection_rate = detected / max(faults_injected, 1)
         correction_rate = corrected / max(detected, 1)
 
-        assert detection_rate == 1.0, f"Detection rate {detection_rate*100}% != 100%"
-        assert correction_rate == 1.0, f"Correction rate {correction_rate*100}% != 100%"
+        if faults_injected > 0 and detected != faults_injected:
+            raise ValueError(f"Detection rate {detected}/{faults_injected} != 100%")
+        if detected > 0 and corrected != detected:
+            raise ValueError(f"Correction rate {corrected}/{detected} != 100%")
+        if false_alarms != 0:
+            raise ValueError(f"False alarms: {false_alarms} (expected 0)")
+        if undetected_errors != 0:
+            raise ValueError(f"Undetected errors: {undetected_errors} (expected 0)")
 
         return {
             "total_trials": N_trials,
@@ -116,6 +129,12 @@ class RRNSSelfHealingEngine:
             "detection_rate": detection_rate,
             "correction_rate": correction_rate,
             "false_alarms": false_alarms,
+            "true_positives": corrected,
+            "true_negatives": no_error_no_detect,
+            "false_positives": false_alarms,
+            "false_negatives": undetected_errors,
+            "undetected_errors": undetected_errors,
+            "undetected_error_rate": undetected_errors / max(faults_injected, 1),
         }
 
 
@@ -134,5 +153,12 @@ if __name__ == "__main__":
         f"Self-Healing Accuracy : {res['correction_rate']*100:.2f}% (Requirement: 100.0%)"
     )
     print(f"False Alarms Recorded : {res['false_alarms']} (Requirement: 0)")
+    print("-" * 70)
+    print("Confusion Matrix:")
+    print(f"  True Positives  (TP) : {res['true_positives']:,}")
+    print(f"  True Negatives  (TN) : {res['true_negatives']:,}")
+    print(f"  False Positives (FP) : {res['false_positives']:,}")
+    print(f"  False Negatives (FN) : {res['false_negatives']:,}")
+    print(f"  Undetected Error Rate: {res['undetected_error_rate']*100:.2f}%")
     print("-" * 70)
     print("[PASS] RRNS Self-Healing 100.0% Verified.")

@@ -1,0 +1,119 @@
+
+Header
+  CHECK KEYWORDS Warn
+  Mesh DB "." "stack"
+End
+
+Simulation
+  Max Output Level = 4
+  Coordinate System = Cartesian
+  Coordinate Mapping(3) = 1 2 3
+  Simulation Type = Steady State
+  Steady State Max Iterations = 1
+  Output Intervals(1) = 1
+  Solver Input File = case.sif
+  Post File = case.vtu
+End
+
+Body 1
+  Target Bodies(1) = 1
+  Name = "Body_CMOS"
+  Equation = 1
+  Material = 1
+End
+
+Body 2
+  Target Bodies(1) = 2
+  Name = "Body_SiO2"
+  Equation = 1
+  Material = 2
+End
+
+Body 3
+  Target Bodies(1) = 3
+  Name = "Body_SiPh"
+  Equation = 1
+  Material = 1
+  Body Force = 1
+End
+
+Body 4
+  Target Bodies(1) = 4
+  Name = "Body_HS1"
+  Equation = 1
+  Material = 4
+End
+
+Body 5
+  Target Bodies(1) = 5
+  Name = "Body_HS2"
+  Equation = 1
+  Material = 4
+End
+
+Body 6
+  Target Bodies(1) = 6
+  Name = "Body_TIM"
+  Equation = 1
+  Material = 3
+End
+
+Equation 1
+  Name = "Heat Equation"
+  Active Solvers(3) = 1 2 3
+End
+
+Solver 1
+  Equation = Heat Equation
+  Variable = Temperature
+  Procedure = "HeatSolve" "HeatSolver"
+  Exec Solver = Always
+  Stabilize = True
+  Optimize Bandwidth = True
+  Steady State Convergence Tolerance = 1.0e-5
+  Linear System Solver = Iterative
+  Linear System Iterative Method = BiCGStab
+  Linear System Max Iterations = 500
+  Linear System Convergence Tolerance = 1.0e-8
+  Linear System Preconditioning = ILU0
+End
+
+Solver 2
+  Equation = SaveScalars
+  Procedure = "SaveData" "SaveScalars"
+  Filename = "scalars.dat"
+  Variable 1 = Temperature
+  Operator 1 = max
+  Operator 2 = min
+  Operator 3 = mean
+  Variable 2 = Temperature
+  Operator 4 = volume
+End
+
+Solver 3
+  Equation = SaveLine
+  Procedure = "SaveData" "SaveLine"
+  Filename = "line.dat"
+  Polyline Coordinates(2,3) = 0.0 0.0 0.0 \
+                              0.0 0.0 660.0e-6
+  Polyline Divisions(1) = 20
+End
+
+Include "materials.sif"
+
+Body Force 1
+  Name = "Heating_Power"
+  Heat Source = 1.0
+  Integral Heat Source = 0.061760
+End
+
+Boundary Condition 1
+  Target Boundaries(1) = 1
+  Name = "HeatSink"
+  Temperature = 298.15
+End
+
+Boundary Condition 2
+  Target Boundaries(1) = 2
+  Name = "CMOS_Bottom_Adiabatic"
+End

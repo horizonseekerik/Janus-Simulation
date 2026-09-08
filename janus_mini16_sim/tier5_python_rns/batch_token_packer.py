@@ -2,14 +2,9 @@
 PROJECT JANUS MINI (16-TILE): BATCH & MULTI-HEAD TOKEN PACKING ENGINE
 ======================================================================
 Solves the spatial crossbar occupancy challenge during autoregressive decoding
-by packing 32 attention heads (or a batch of 32 tokens) into the 32 input waveguide
-rows of the physical 32x32 optical multiplier mesh.
+by packing attention heads (or a batch of tokens) into the optical multiplier mesh.
 
-Achieves:
-  - 100.0% Spatial Tile Crossbar Occupancy (32 / 32 active rows vs 3.125% unbatched)
-  - 32x Linear Throughput Scaling for Autoregressive Generation
-  - Millions of Tokens/Second Generation Rate at sub-20 nJ per token
-  - Bit-Exact Multi-Head Attention (QK^T and AV) Validation vs. NumPy/PyTorch
+Calculates actual hardware utilization based on block packing efficiency.
 """
 
 import sys
@@ -24,7 +19,7 @@ if BASE_DIR not in sys.path:
 
 from configs import mini_16t_constants as cfg
 from tier5_python_rns.spatial_one_hot_router import SpatialOneHotAccelerator
-from tier5_python_rns.moduli_generator import generate_moduli_set
+from tier5_python_rns.moduli_generator import generate_moduli_set, get_tiles_for_precision
 
 
 @dataclass
@@ -35,15 +30,20 @@ class PackedAttentionResult:
     seq_len: int
     precision: str
     spatial_row_occupancy_pct: float
-    total_macs: int
+    hardware_utilization_pct: float
+    total_useful_macs: int
+    total_hardware_macs: int
     total_tile_blocks: int
     execution_cycles: int
-    raw_latency_ns: float
     sustained_latency_ns: float
     tokens_per_second: float
     energy_uj: float
     energy_per_token_nj: float
     bit_exact_match: bool
+
+    @property
+    def total_macs(self) -> int:
+        return self.total_useful_macs
 
 
 @dataclass
@@ -54,7 +54,9 @@ class PackedMLPResult:
     intermediate_dim: int
     precision: str
     spatial_row_occupancy_pct: float
-    total_macs: int
+    hardware_utilization_pct: float
+    total_useful_macs: int
+    total_hardware_macs: int
     total_tile_blocks: int
     execution_cycles: int
     sustained_latency_ns: float
@@ -64,28 +66,33 @@ class PackedMLPResult:
     energy_per_token_nj: float
     bit_exact_match: bool
 
+    @property
+    def total_macs(self) -> int:
+        return self.total_useful_macs
+
 
 class BatchTokenPacker:
     """
     Packs multi-head attention queries and batched token representations
-    into 32x32 optical crossbar tiles to maximize spatial waveguide occupancy.
+    into optical crossbar tiles to maximize spatial waveguide occupancy.
+    Supports both Autoregressive Decode Attention (H * seq_len * d_head)
+    and Context Prefill Full Self-Attention (H * seq_len^2 * d_head).
     """
 
     def __init__(self):
-        self.N_tiles = cfg.N_tiles          # 16 physical tiles
-        self.N_dim = cfg.N_dim              # 32x32 crossbar dimensions
-        self.f_clk = cfg.f_clk              # 100 GHz
-        self.T_cycle = cfg.T_cycle          # 10.0 ps
-        self.eta = cfg.eta_sustained        # 0.85 JIR duty cycle
-        self.P_total = cfg.P_total_system   # 6.17 W
+        self.N_tiles = cfg.N_tiles
+        self.N_dim = cfg.N_dim
+        self.f_clk = cfg.f_clk
+        self.T_cycle = cfg.T_cycle
+        self.eta = cfg.eta_sustained
+        self.P_total = cfg.P_total_system
 
         self.accelerator = SpatialOneHotAccelerator()
-        self.mod_info = generate_moduli_set()
 
     def get_parallel_engines(self, precision: str = "INT8") -> int:
-        """Returns number of independent GEMM engines for the given precision."""
-        k_tiles = 2 if precision.upper() == "INT8" else 1
-        return self.N_tiles // k_tiles
+        """Returns number of independent GEMM engines for the given precision based on hardware tiles."""
+        k_tiles = get_tiles_for_precision(precision)
+        return max(1, self.N_tiles // k_tiles)
 
     def pack_multihead_attention(
         self,
@@ -95,52 +102,69 @@ class BatchTokenPacker:
         precision: str = "INT8",
         verify_exactness: bool = True,
     ) -> PackedAttentionResult:
-        """
-        Packs 32 attention heads simultaneously across the 32 rows of the optical crossbar.
-
-        Matrix Structure:
-          Q_packed: (32 heads x 128 d_head) -> 4 blocks of (32 x 32)
-          K_cache:  (seq_len x 128 d_head)  -> (seq_len/32) x 4 blocks of (32 x 32)
-        """
         n_engines = self.get_parallel_engines(precision)
 
-        # 1. Total compute: QK^T scores (num_heads x seq_len x d_head)
-        total_macs = num_heads * seq_len * d_head
+        # 1. Total useful compute: QK^T scores (num_heads x seq_len x d_head)
+        total_useful_macs = num_heads * seq_len * d_head
 
-        # 2. Tile block decomposition:
-        # Q is 32x128 -> (1 x 4) blocks of 32x32
-        # K^T is 128xSeq_len -> (4 x ceil(seq_len/32)) blocks of 32x32
-        blocks_Q = 1
+        # 2. Tile block decomposition (packing heads into the M dimension):
+        # We pack heads into blocks of N_dim.
+        blocks_M = math.ceil(num_heads / self.N_dim)
         blocks_D = math.ceil(d_head / self.N_dim)
         blocks_S = math.ceil(seq_len / self.N_dim)
-        total_tile_blocks = blocks_Q * blocks_D * blocks_S
+        
+        total_tile_blocks = blocks_M * blocks_D * blocks_S
+        
+        # 3. Hardware MACs performed (including padding)
+        macs_per_block = self.N_dim * self.N_dim * self.N_dim
+        total_hardware_macs = total_tile_blocks * macs_per_block
+        
+        utilization_pct = (total_useful_macs / total_hardware_macs) * 100.0
+        
+        # We pack min(num_heads, N_dim) into a single M-block
+        occupancy_pct = (min(num_heads, self.N_dim) / float(self.N_dim)) * 100.0
 
-        # 3. Wave-pipelined execution cycles
+        # 4. Wave-pipelined execution cycles
         execution_cycles = math.ceil(total_tile_blocks / n_engines) + 12
         raw_latency_s = execution_cycles * self.T_cycle
         sustained_latency_s = raw_latency_s / self.eta
-
-        raw_latency_ns = raw_latency_s * 1e9
         sustained_latency_ns = sustained_latency_s * 1e9
 
-        # 4. Token generation rate (1 token generated across all 32 heads in this step)
+        # 5. Token generation rate
         tokens_per_second = 1.0 / sustained_latency_s
         total_energy_j = self.P_total * sustained_latency_s
         total_energy_uj = total_energy_j * 1e6
         energy_per_token_nj = total_energy_j * 1e9
 
-        # Spatial row occupancy is 100% since all 32 rows are loaded with distinct head queries
-        occupancy_pct = (min(num_heads, 32) / 32.0) * 100.0
-
-        # 5. Numerical verification on packed 32x32 block
         bit_exact = True
         if verify_exactness:
-            Q_sample = np.random.randint(0, 30, size=(self.N_dim, self.N_dim))
-            K_sample = np.random.randint(0, 30, size=(self.N_dim, self.N_dim))
-            S_opt = self.accelerator.matmul(Q_sample, K_sample)
-            S_ref = np.matmul(Q_sample.astype(object), K_sample.astype(object))
-            diff = int(np.sum(np.abs(S_opt - S_ref)))
-            bit_exact = (diff == 0)
+            # End-to-end packed multi-head attention tile execution:
+            # Pack H head query vectors into rows and key cache into columns of an N_dim x N_dim hardware block
+            rng = np.random.RandomState(42)
+            H_sub = min(num_heads, self.N_dim)
+            D_sub = min(d_head, self.N_dim)
+            S_sub = min(seq_len, self.N_dim)
+
+            Q_heads = rng.randint(-30, 30, size=(H_sub, D_sub))
+            K_cache = rng.randint(-30, 30, size=(D_sub, S_sub))
+
+            # Hardware tile packing with zero-padding for non-full crossbars
+            Q_tile = np.zeros((self.N_dim, self.N_dim), dtype=int)
+            K_tile = np.zeros((self.N_dim, self.N_dim), dtype=int)
+            Q_tile[:H_sub, :D_sub] = Q_heads
+            K_tile[:D_sub, :S_sub] = K_cache
+
+            # Execute through 16-tile spatial optical accelerator
+            S_opt_tile = self.accelerator.matmul(Q_tile, K_tile)
+
+            # Unpack scores and verify against mathematical multi-head attention reference
+            S_unpacked = S_opt_tile[:H_sub, :S_sub]
+            S_ref = np.matmul(Q_heads.astype(object), K_cache.astype(object))
+            diff = int(np.sum(np.abs(S_unpacked - S_ref)))
+
+            # Verify padding boundary isolation (zero crosstalk in non-occupied channels)
+            pad_bleed = int(np.sum(np.abs(S_opt_tile[H_sub:, :]))) + int(np.sum(np.abs(S_opt_tile[:, S_sub:])))
+            bit_exact = (diff == 0 and pad_bleed == 0)
 
         return PackedAttentionResult(
             model="LLaMA-3-8B (Multi-Head Attention)",
@@ -149,10 +173,11 @@ class BatchTokenPacker:
             seq_len=seq_len,
             precision=precision.upper(),
             spatial_row_occupancy_pct=occupancy_pct,
-            total_macs=total_macs,
+            hardware_utilization_pct=utilization_pct,
+            total_useful_macs=total_useful_macs,
+            total_hardware_macs=total_hardware_macs,
             total_tile_blocks=total_tile_blocks,
             execution_cycles=execution_cycles,
-            raw_latency_ns=raw_latency_ns,
             sustained_latency_ns=sustained_latency_ns,
             tokens_per_second=tokens_per_second,
             energy_uj=total_energy_uj,
@@ -168,20 +193,31 @@ class BatchTokenPacker:
         precision: str = "INT8",
         verify_exactness: bool = True,
     ) -> PackedMLPResult:
-        """
-        Packs a batch of 32 tokens into the 32 input rows for SwiGLU MLP Feed-Forward execution.
-        """
         n_engines = self.get_parallel_engines(precision)
 
-        # Gate + Up Projections: (32 x 4096) @ (4096 x 28672)
-        # Down Projection:       (32 x 14336) @ (14336 x 4096)
+        # Gate + Up Projections: (batch x hidden) @ (hidden x 2*inter)
         macs_gate_up = batch_size * hidden_dim * (intermediate_dim * 2)
+        # Down Projection: (batch x inter) @ (inter x hidden)
         macs_down = batch_size * intermediate_dim * hidden_dim
-        total_macs = macs_gate_up + macs_down
+        total_useful_macs = macs_gate_up + macs_down
 
-        blocks_gate_up = (batch_size // 32) * (hidden_dim // 32) * ((intermediate_dim * 2) // 32)
-        blocks_down = (batch_size // 32) * (intermediate_dim // 32) * (hidden_dim // 32)
+        # Block packing
+        b_M = math.ceil(batch_size / self.N_dim)
+        b_K1 = math.ceil(hidden_dim / self.N_dim)
+        b_N1 = math.ceil((intermediate_dim * 2) / self.N_dim)
+        blocks_gate_up = b_M * b_K1 * b_N1
+        
+        b_K2 = math.ceil(intermediate_dim / self.N_dim)
+        b_N2 = math.ceil(hidden_dim / self.N_dim)
+        blocks_down = b_M * b_K2 * b_N2
+        
         total_blocks = blocks_gate_up + blocks_down
+        
+        macs_per_block = self.N_dim * self.N_dim * self.N_dim
+        total_hardware_macs = total_blocks * macs_per_block
+        
+        utilization_pct = (total_useful_macs / total_hardware_macs) * 100.0
+        occupancy_pct = (min(batch_size, self.N_dim) / float(self.N_dim)) * 100.0
 
         execution_cycles = math.ceil(total_blocks / n_engines) + 12
         raw_latency_s = execution_cycles * self.T_cycle
@@ -195,16 +231,29 @@ class BatchTokenPacker:
         total_energy_uj = total_energy_j * 1e6
         energy_per_token_nj = (total_energy_j / batch_size) * 1e9
 
-        occupancy_pct = (min(batch_size, 32) / 32.0) * 100.0
-
         bit_exact = True
         if verify_exactness:
-            X_sample = np.random.randint(0, 30, size=(self.N_dim, self.N_dim))
-            W_sample = np.random.randint(0, 30, size=(self.N_dim, self.N_dim))
-            Y_opt = self.accelerator.matmul(X_sample, W_sample)
-            Y_ref = np.matmul(X_sample.astype(object), W_sample.astype(object))
-            diff = int(np.sum(np.abs(Y_opt - Y_ref)))
-            bit_exact = (diff == 0)
+            # End-to-end packed token representation tile execution
+            rng = np.random.RandomState(42)
+            B_sub = min(batch_size, self.N_dim)
+            H_sub = min(hidden_dim, self.N_dim)
+            I_sub = min(intermediate_dim, self.N_dim)
+
+            X_tokens = rng.randint(-30, 30, size=(B_sub, H_sub))
+            W_weights = rng.randint(-30, 30, size=(H_sub, I_sub))
+
+            X_tile = np.zeros((self.N_dim, self.N_dim), dtype=int)
+            W_tile = np.zeros((self.N_dim, self.N_dim), dtype=int)
+            X_tile[:B_sub, :H_sub] = X_tokens
+            W_tile[:H_sub, :I_sub] = W_weights
+
+            Y_opt_tile = self.accelerator.matmul(X_tile, W_tile)
+            Y_unpacked = Y_opt_tile[:B_sub, :I_sub]
+            Y_ref = np.matmul(X_tokens.astype(object), W_weights.astype(object))
+
+            diff = int(np.sum(np.abs(Y_unpacked - Y_ref)))
+            pad_bleed = int(np.sum(np.abs(Y_opt_tile[B_sub:, :]))) + int(np.sum(np.abs(Y_opt_tile[:, I_sub:])))
+            bit_exact = (diff == 0 and pad_bleed == 0)
 
         return PackedMLPResult(
             model="LLaMA-3-8B (SwiGLU MLP Block)",
@@ -213,7 +262,9 @@ class BatchTokenPacker:
             intermediate_dim=intermediate_dim,
             precision=precision.upper(),
             spatial_row_occupancy_pct=occupancy_pct,
-            total_macs=total_macs,
+            hardware_utilization_pct=utilization_pct,
+            total_useful_macs=total_useful_macs,
+            total_hardware_macs=total_hardware_macs,
             total_tile_blocks=total_blocks,
             execution_cycles=execution_cycles,
             sustained_latency_ns=sustained_latency_ns,

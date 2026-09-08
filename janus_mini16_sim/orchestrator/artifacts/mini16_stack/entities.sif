@@ -1,0 +1,38 @@
+!------ Skeleton for body section -----
+Body 1
+  Name = VOL_CMOS_SUBSTRATE
+End
+
+Body 2
+  Name = VOL_SIO2_BUFFER
+End
+
+Body 3
+  Name = VOL_SIPH_STRATUM
+End
+
+Body 4
+  Name = VOL_HEAT_SPREADER1
+End
+
+Body 5
+  Name = VOL_HEAT_SPREADER2
+End
+
+Body 6
+  Name = VOL_TIM_GAP
+End
+
+!------ Skeleton for boundary section -----
+Boundary Condition 1
+  Name = SURF_HEAT_SINK
+End
+
+Boundary Condition 2
+  Name = SURF_CMOS_BOTTOM
+End
+
+Boundary Condition 3
+  Name = SURF_ACTIVE_HOTSPOT
+End
+

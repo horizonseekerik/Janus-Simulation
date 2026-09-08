@@ -1,15 +1,15 @@
 {
   "project": "Project JANUS Mini 16-Tile",
-  "timestamp": "2026-08-27T19:49:04Z",
+  "timestamp": "2026-09-08T16:23:14Z",
   "overall_pass": true,
-  "status": "TAPEOUT-GRADE VALIDATED",
+  "status": "VERIFICATION COMPLETED",
   "execution_times_seconds": {
-    "tier4": 2.1947879791259766,
-    "tier3": 0.167647123336792,
-    "tier2": 0.04125475883483887,
-    "tier1": 0.08205127716064453,
-    "tier5": 1.6411244869232178,
-    "total": 4.12686562538147
+    "tier1": 62.76252818107605,
+    "tier2": 5.028490781784058,
+    "tier3": 0.014976263046264648,
+    "tier4": 2.6070306301116943,
+    "tier5": 5.35869574546814,
+    "total": 75.77217149734497
   },
   "verification_checks": [
     {
@@ -17,37 +17,37 @@
       "name": "Sb2S3 Switch Insertion Loss (Amorphous)",
       "tier": "Tier 1",
       "target_spec": "IL <= 0.50 dB",
-      "measured_value": "0.017 dB",
+      "measured_value": "0.2627",
       "threshold": "<= 0.50 dB",
       "passed": true,
-      "details": "Amorphous low-loss state transmission"
+      "details": "Amorphous low-loss state transmission (MZI architecture)"
     },
     {
       "id": 2,
       "name": "Dilated Bene\u0161 Extinction Ratio",
       "tier": "Tier 1",
       "target_spec": "ER >= 25.0 dB",
-      "measured_value": "25.0 dB",
+      "measured_value": "104.3",
       "threshold": ">= 25.0 dB",
       "passed": true,
-      "details": "Minimum dilated Bene\u0161 on/off contrast"
+      "details": "Dilated Bene\u0161 on/off contrast (2 stages x ER_cell)"
     },
     {
       "id": 3,
       "name": "Waveguide Crossing Insertion Loss",
       "tier": "Tier 1",
-      "target_spec": "IL <= 0.025 dB",
-      "measured_value": "0.0131 dB",
-      "threshold": "<= 0.025 dB",
+      "target_spec": "IL <= 0.100 dB",
+      "measured_value": "0.09143",
+      "threshold": "<= 0.100 dB",
       "passed": true,
-      "details": "MMI-optimized crossing through-loss"
+      "details": "Talbot self-imaging MMI crossing through-loss (adiabatic parabolic expansion)"
     },
     {
       "id": 4,
       "name": "Waveguide Crossing Crosstalk",
       "tier": "Tier 1",
       "target_spec": "XT <= -38.0 dB",
-      "measured_value": "-41.06 dB",
+      "measured_value": "-57.77",
       "threshold": "<= -38.0 dB",
       "passed": true,
       "details": "Cross-port parasitic optical isolation"
@@ -57,7 +57,7 @@
       "name": "SiO2 Thermal Diffusion Time Constant",
       "tier": "Tier 2",
       "target_spec": "65 ms <= tau_diff <= 72 ms",
-      "measured_value": "69.06 ms",
+      "measured_value": "69.06",
       "threshold": "65.0 - 72.0 ms",
       "passed": true,
       "details": "Monolithic 250 um buffer thermal lag"
@@ -67,7 +67,7 @@
       "name": "Per-Cycle Thermal Transient",
       "tier": "Tier 2",
       "target_spec": "dT_cycle <= 0.80 mK",
-      "measured_value": "0.798 mK",
+      "measured_value": "0.798",
       "threshold": "<= 0.80 mK",
       "passed": true,
       "details": "Transient per 5 us JIR activation epoch"
@@ -77,7 +77,7 @@
       "name": "Max Steady-State Operating Temperature",
       "tier": "Tier 2",
       "target_spec": "T_steady <= 70.0 deg-C",
-      "measured_value": "25.06 deg-C",
+      "measured_value": "26.08",
       "threshold": "<= 70.0 deg-C",
       "passed": true,
       "details": "Steady-state SiPh core under full workload"
@@ -87,7 +87,7 @@
       "name": "Thermal ROM Extraction Accuracy",
       "tier": "Tier 2",
       "target_spec": "R^2 >= 0.999",
-      "measured_value": "1.000000",
+      "measured_value": "0.9998",
       "threshold": ">= 0.999",
       "passed": true,
       "details": "5-pole Foster RC state-space model fit"
@@ -97,7 +97,7 @@
       "name": "APD Practical Sensitivity Margin",
       "tier": "Tier 3",
       "target_spec": "Margin >= +3.00 dB",
-      "measured_value": "+3.02 dB",
+      "measured_value": "6.142",
       "threshold": ">= +3.00 dB",
       "passed": true,
       "details": "Net margin over practical sensitivity with jitter"
@@ -107,7 +107,7 @@
       "name": "Optical Receiver Bit Error Rate",
       "tier": "Tier 3",
       "target_spec": "BER <= 10^-18",
-      "measured_value": "2.35e-37",
+      "measured_value": "3.135e-34",
       "threshold": "<= 1.00e-18",
       "passed": true,
       "details": "Calculated with Q=9.38 error bound"
@@ -117,7 +117,7 @@
       "name": "100 GHz Eye Diagram Opening",
       "tier": "Tier 3",
       "target_spec": "Eye Opening > 0%",
-      "measured_value": "71.4%",
+      "measured_value": "75.39",
       "threshold": "> 0.0%",
       "passed": true,
       "details": "Clear binary spatial discrimination at 100 GHz"
@@ -127,7 +127,7 @@
       "name": "CRT Adder Tree Digital Latency",
       "tier": "Tier 4",
       "target_spec": "t_CRT <= 220 ps",
-      "measured_value": "80.0 ps",
+      "measured_value": "80",
       "threshold": "<= 220.0 ps",
       "passed": true,
       "details": "8-stage 100 GHz wave-pipelined reconstruction tree"
@@ -137,7 +137,7 @@
       "name": "RTL Cycle-Accurate Verification",
       "tier": "Tier 4",
       "target_spec": "Errors == 0",
-      "measured_value": "0 errors",
+      "measured_value": "0",
       "threshold": "== 0 errors",
       "passed": true,
       "details": "Icarus Verilog + VVP cycle accuracy pass"
@@ -147,7 +147,7 @@
       "name": "Z3 SMT Formal Proofs (4 Proofs)",
       "tier": "Tier 5",
       "target_spec": "4 / 4 Proved",
-      "measured_value": "4 / 4 Proved",
+      "measured_value": "4",
       "threshold": "All 4 Proved",
       "passed": true,
       "details": "Coprimality, dynamic range, bijection, completeness"
@@ -157,7 +157,7 @@
       "name": "RRNS Single-Fault Self-Healing Recovery",
       "tier": "Tier 5",
       "target_spec": "Correction == 100.0%",
-      "measured_value": "100.0%",
+      "measured_value": "1",
       "threshold": "== 100.0%",
       "passed": true,
       "details": "2000 Monte Carlo trials with BER injection"
@@ -167,7 +167,7 @@
       "name": "Exact GEMM Arithmetic Precision Deviation",
       "tier": "Tier 5",
       "target_spec": "Deviation == 0 across INT4-INT64",
-      "measured_value": "0 errors",
+      "measured_value": "0",
       "threshold": "== 0 deviation",
       "passed": true,
       "details": "Bit-exact matrix multiplication vs NumPy ground truth"

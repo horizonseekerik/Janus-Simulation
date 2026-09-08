@@ -1,0 +1,28 @@
+{
+  "system": "JANUS_MINI_16T",
+  "description": "Canonical Moduli Configuration & Single Source of Truth for RNS/CRT Architecture",
+  "num_compute_channels": 16,
+  "compute_moduli": [
+    {"index": 0,  "modulus": 256, "bits": 9, "tile_id": 0},
+    {"index": 1,  "modulus": 251, "bits": 9, "tile_id": 1},
+    {"index": 2,  "modulus": 243, "bits": 9, "tile_id": 2},
+    {"index": 3,  "modulus": 241, "bits": 9, "tile_id": 3},
+    {"index": 4,  "modulus": 239, "bits": 9, "tile_id": 4},
+    {"index": 5,  "modulus": 233, "bits": 9, "tile_id": 5},
+    {"index": 6,  "modulus": 229, "bits": 9, "tile_id": 6},
+    {"index": 7,  "modulus": 227, "bits": 9, "tile_id": 7},
+    {"index": 8,  "modulus": 223, "bits": 9, "tile_id": 8},
+    {"index": 9,  "modulus": 211, "bits": 9, "tile_id": 9},
+    {"index": 10, "modulus": 199, "bits": 9, "tile_id": 10},
+    {"index": 11, "modulus": 197, "bits": 9, "tile_id": 11},
+    {"index": 12, "modulus": 193, "bits": 9, "tile_id": 12},
+    {"index": 13, "modulus": 191, "bits": 9, "tile_id": 13},
+    {"index": 14, "modulus": 181, "bits": 9, "tile_id": 14},
+    {"index": 15, "modulus": 179, "bits": 9, "tile_id": 15}
+  ],
+  "num_redundant_channels": 2,
+  "redundant_moduli": [
+    {"index": 0, "modulus": 173, "bits": 9, "role": "JIR_RED_0", "channel_id": 16},
+    {"index": 1, "modulus": 169, "bits": 9, "role": "JIR_RED_1", "channel_id": 17}
+  ]
+}

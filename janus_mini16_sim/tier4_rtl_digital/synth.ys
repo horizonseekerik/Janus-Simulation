@@ -1,7 +1,18 @@
 # ==============================================================================
 # PROJECT JANUS MINI (16-TILE): YOSYS LOGIC SYNTHESIS SCRIPT
 # ==============================================================================
-# Synthesizes Tier 4 100 GHz Digital RTL blocks into generic gate-level netlists.
+# Synthesizes the integrated Tier 4 Digital Top (janus_tier4_top) into a generic
+# gate-level netlist.
+#
+# NOTE ON ASIC MEMORY ARCHITECTURE & 850+ KBIT ROM STORAGE:
+# Project Janus RTL incorporates ~851,968 bits (~104 KiB) of precomputed lookups:
+#   - CRT Adder Tree: 16 channels x 256 entries x 136 bits = 557,056 bits (~68 KiB)
+#   - Compute RNS Encoder: 16 channels x 8 bytes x 256 entries x 8 bits = 262,144 bits (~32 KiB)
+#   - JIR Redundant Encoders: 2 channels x 8 bytes x 256 entries x 8 bits = 32,768 bits (~4 KiB)
+#
+# In a physical ASIC tapeout, these arrays are instantiated as dense compiled
+# diffusion ROM hard macros (area: ~0.08 um^2/bit @ 7nm) rather than synthesizing
+# millions of discrete NAND2 gates.
 #
 # Usage (with Yosys installed):
 #     yosys synth.ys
@@ -11,23 +22,20 @@
 read_verilog -sv rns_encoder.v
 read_verilog -sv crt_adder_tree.v
 read_verilog -sv jir_fault_monitor.v
+read_verilog -sv janus_tier4_top.v
 
-# 2. Check Design Hierarchy
-hierarchy -check -top crt_adder_tree
+# 2. Check Integrated Design Hierarchy
+hierarchy -check -top janus_tier4_top
 
-# 3. High-Level Synthesis & Optimization
+# 3. High-Level Synthesis & Elaboration
 proc; opt; fsm; opt; memory; opt
 
-# 4. Flatten Arithmetic Multipliers & Adders
+# 4. Flatten Arithmetic Multipliers & Modular Adders
 techmap; opt
 
-# 5. Map to Generic Standard Cells (DFFs and 2-Input Gates)
-dfflibmap -liberty generic.lib
-abc -liberty generic.lib
-
-# 6. Clean & Print Area Statistics
+# 5. Clean & Print Area Statistics
 clean
-stat
+stat -top janus_tier4_top
 
-# 7. Write Gate-Level Netlist
-write_verilog -noattr crt_adder_tree_synth_netlist.v
+# 6. Write Gate-Level Netlist
+write_verilog -noattr janus_tier4_synth_netlist.v

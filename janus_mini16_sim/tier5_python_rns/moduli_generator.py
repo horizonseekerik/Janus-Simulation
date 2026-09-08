@@ -11,17 +11,31 @@ import os
 import math
 from typing import List, Dict, Tuple, Any
 
-# Add parent dir to import configs
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from configs import mini_16t_constants as cfg
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
+try:
+    from configs import mini_16t_constants as cfg
+except ImportError:
+    import configs.mini_16t_constants as cfg
 
 
 def is_prime(n: int) -> bool:
+    """Deterministic primality test with 6k +/- 1 optimization."""
     if n < 2:
         return False
-    for i in range(2, int(math.isqrt(n)) + 1):
+    if n in (2, 3):
+        return True
+    if n % 2 == 0 or n % 3 == 0:
+        return False
+    i = 5
+    w = 2
+    while i * i <= n:
         if n % i == 0:
             return False
+        i += w
+        w = 6 - w
     return True
 
 
@@ -51,17 +65,18 @@ def generate_qrns_moduli_set() -> Dict[str, Any]:
     moduli = cfg.moduli_qrns_compute
     roots = cfg.roots_qrns_compute
 
-    # Verify all properties
+    # Verify all properties with explicit exceptions
     for m, j in zip(moduli, roots):
-        assert m % 2 != 0, f"Modulus {m} must be odd"
-        assert (j * j) % m == (m - 1), f"Root {j} failed j^2 = -1 mod {m}"
+        if m % 2 == 0:
+            raise ValueError(f"Modulus {m} must be odd")
+        if (j * j) % m != (m - 1):
+            raise ValueError(f"Root {j} failed j^2 = -1 mod {m}")
 
     # Verify pairwise coprimality
     for i in range(len(moduli)):
         for k in range(i + 1, len(moduli)):
-            assert (
-                math.gcd(moduli[i], moduli[k]) == 1
-            ), f"Moduli pair ({moduli[i]}, {moduli[k]}) is not coprime"
+            if math.gcd(moduli[i], moduli[k]) != 1:
+                raise ValueError(f"Moduli pair ({moduli[i]}, {moduli[k]}) is not coprime")
 
     M_tot = 1
     for m in moduli:
@@ -144,27 +159,82 @@ def from_prns(residues: List[int], prns_info: Dict[str, Any]) -> int:
     return val
 
 
+def get_tiles_for_precision(precision: Any) -> int:
+    """
+    Canonical mapping from integer precision to required optical residue tiles.
+    Based on exact signed dynamic-range bound: M/2 > (2^(P-1))^2 = 2^(2P-2),
+    requiring M > 2^(2P-1).
+    - INT4:  P=4  -> Max signed product = 64    -> M > 128    -> 1 tile (m0 >= 251)
+    - INT8:  P=8  -> Max signed product = 16384 -> M > 32768  -> 2 tiles (m0*m1 >= 64256)
+    - INT16: P=16 -> Max signed product = 2^30  -> M > 2^31   -> 4 tiles
+    - INT32: P=32 -> Max signed product = 2^62  -> M > 2^63   -> 8 tiles
+    - INT64: P=64 -> Dual-cluster PRNS decomposition         -> 16 tiles
+    """
+    if isinstance(precision, int):
+        p_str = f"INT{precision}"
+    else:
+        p_str = str(precision).upper()
+
+    mapping = {
+        "INT4": 1,
+        "INT8": 2,
+        "INT16": 4,
+        "INT32": 8,
+        "INT64": 16,
+    }
+    if p_str not in mapping:
+        raise ValueError(
+            f"Unsupported precision: {precision}. Must be one of {list(mapping.keys())}"
+        )
+    return mapping[p_str]
+
+
 def generate_moduli_set(
     N_tiles: int = cfg.N_tiles,
     N_rrns: int = cfg.N_rrns_redundant,
     m_max: int = cfg.m_max,
     target_bits: int = 64,
+    pure_prime: bool = False,
 ) -> Dict[str, Any]:
-    """Generates standard flat coprime moduli set."""
-    prime_powers = []
-    for p in range(2, m_max + 1):
-        if is_prime(p):
-            k = 1
-            max_power = p
-            while p ** (k + 1) <= m_max:
-                k += 1
-                max_power = p**k
-            prime_powers.append((max_power, p))
+    """
+    Greedy pairwise coprime moduli selection algorithm.
+    Selects largest available mutually coprime numbers bounded by m_max.
+    
+    Parameters:
+    -----------
+    N_tiles : int
+        Number of compute channels (default: 16).
+    N_rrns : int
+        Number of redundant error-detection/correction channels (default: 2).
+    m_max : int
+        Upper bound on channel modulus (default: 256).
+    target_bits : int
+        Minimum aggregate dynamic range in bits (default: 64).
+    pure_prime : bool
+        If True, selects strictly prime moduli so that every non-zero residue
+        is invertible (coprime), guaranteeing 100% permutation-routable operations
+        through the optical Beneš fabric without non-coprime fan-in.
+        If False, uses prime powers (classical maximum dynamic range density).
+    """
+    candidates = []
+    if pure_prime:
+        for p in range(2, m_max + 1):
+            if is_prime(p):
+                candidates.append((p, p))
+    else:
+        for p in range(2, m_max + 1):
+            if is_prime(p):
+                k = 1
+                max_power = p
+                while p ** (k + 1) <= m_max:
+                    k += 1
+                    max_power = p**k
+                candidates.append((max_power, p))
 
-    prime_powers.sort(key=lambda x: x[0], reverse=True)
+    candidates.sort(key=lambda x: x[0], reverse=True)
 
     selected = []
-    for power_val, prime_base in prime_powers:
+    for power_val, prime_base in candidates:
         is_coprime = True
         for sel in selected:
             if math.gcd(power_val, sel) != 1:
@@ -175,12 +245,23 @@ def generate_moduli_set(
             if len(selected) == N_tiles + N_rrns:
                 break
 
+    if len(selected) < N_tiles + N_rrns:
+        raise RuntimeError(
+            f"Insufficient coprime moduli: found {len(selected)}, but {N_tiles + N_rrns} "
+            f"are required with m_max={m_max} (pure_prime={pure_prime})"
+        )
+
     moduli_compute = selected[:N_tiles]
     moduli_redundant = selected[N_tiles : N_tiles + N_rrns]
 
     M_compute = 1
     for m in moduli_compute:
         M_compute *= m
+
+    if target_bits is not None and M_compute.bit_length() < target_bits:
+        raise ValueError(
+            f"Generated dynamic range ({M_compute.bit_length()} bits) is below target {target_bits} bits"
+        )
 
     M_i = [M_compute // m for m in moduli_compute]
     N_i = [mod_inverse(M_i[i], moduli_compute[i]) for i in range(N_tiles)]
@@ -193,6 +274,7 @@ def generate_moduli_set(
         "M_bits": M_compute.bit_length(),
         "M_i": M_i,
         "N_i": N_i,
+        "pure_prime": pure_prime,
     }
 
 

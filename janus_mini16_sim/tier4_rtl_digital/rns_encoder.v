@@ -3,8 +3,7 @@
 // ==============================================================================
 // Decomposes 64-bit unsigned integer X into 16 parallel residue channels.
 // 4-stage pipelined residue reduction tree using precomputed byte LUTs and
-// 9-bit modular adders. Closes timing at 100 GHz (10 ps period).
-// Latency: 4 clock cycles (40 ps @ 100 GHz).
+// 9-bit modular adders. Target clock TBD — depends on synthesis results for chosen technology node.
 // ==============================================================================
 
 `timescale 1ps / 1ps
@@ -181,7 +180,8 @@ module rns_encoder (
     localparam [8:0] M15 = 9'd179;
 
     wire [15:0] ch_valids;
-    assign out_valid = ch_valids[0];
+    // All 16 residue channel valid signals must track identically
+    assign out_valid = &ch_valids;
 
     rns_channel_encoder #(.MOD(M0))  u_ch0  (.clk(clk), .rst_n(rst_n), .in_valid(in_valid), .in_X(in_X), .out_valid(ch_valids[0]),  .out_r(out_r0));
     rns_channel_encoder #(.MOD(M1))  u_ch1  (.clk(clk), .rst_n(rst_n), .in_valid(in_valid), .in_X(in_X), .out_valid(ch_valids[1]),  .out_r(out_r1));

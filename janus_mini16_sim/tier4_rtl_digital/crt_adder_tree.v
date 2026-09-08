@@ -2,7 +2,7 @@
 // PROJECT JANUS MINI (16-TILE): PIPELINED CRT ADDER TREE (ALGORITHM 4B)
 // ==============================================================================
 // Reconstructs 64-bit integer X from 16 residue channels using an 8-stage pipeline.
-// Latency: 8 clock cycles (80 ps @ 100 GHz), Gate-level accumulation delay per stage <= 10 ps.
+// Target clock TBD — depends on synthesis results for chosen technology node
 // ==============================================================================
 
 `timescale 1ps / 1ps
@@ -31,62 +31,7 @@ module crt_adder_tree (
     output reg  [63:0]  out_X
 );
 
-    // Total Dynamic Range Modulus (Hexadecimal 128-bit)
-    localparam [127:0] M_TOTAL    = 128'h120de925ab00c09fd76326e49e93bf00;
-    localparam [139:0] M_TOTAL_X8 = {9'b0,  M_TOTAL, 3'b000}; // 8 * M_TOTAL
-    localparam [139:0] M_TOTAL_X4 = {10'b0, M_TOTAL, 2'b00};  // 4 * M_TOTAL
-    localparam [139:0] M_TOTAL_X2 = {11'b0, M_TOTAL, 1'b0};   // 2 * M_TOTAL
-    localparam [139:0] M_TOTAL_X1 = {12'b0, M_TOTAL};         // 1 * M_TOTAL
-
-    // Precomputed CRT Constants (M_i, N_i, m_i)
-    localparam [8:0]   M_0 = 9'd256;
-    localparam [8:0]   N_0 = 9'd63;
-    localparam [127:0] MI_0 = 128'h120de925ab00c09fd76326e49e93bf;
-    localparam [8:0]   M_1 = 9'd251;
-    localparam [8:0]   N_1 = 9'd237;
-    localparam [127:0] MI_1 = 128'h1269fb0ceb9ac6805920cadae50d00;
-    localparam [8:0]   M_2 = 9'd243;
-    localparam [8:0]   N_2 = 9'd236;
-    localparam [127:0] MI_2 = 128'h13052c66e49cb5dc03918af2f50500;
-    localparam [8:0]   M_3 = 9'd241;
-    localparam [8:0]   N_3 = 9'd79;
-    localparam [127:0] MI_3 = 128'h132d94deb7c55054cf8c608cdfaf00;
-    localparam [8:0]   M_4 = 9'd239;
-    localparam [8:0]   N_4 = 9'd81;
-    localparam [127:0] MI_4 = 128'h1356aa779c6359929328dd9bfa3100;
-    localparam [8:0]   M_5 = 9'd233;
-    localparam [8:0]   N_5 = 9'd168;
-    localparam [127:0] MI_5 = 128'h13d6269dd98c5cfa5506c25ac66700;
-    localparam [8:0]   M_6 = 9'd229;
-    localparam [8:0]   N_6 = 9'd50;
-    localparam [127:0] MI_6 = 128'h142eda27df9585ba833a4d040bd300;
-    localparam [8:0]   M_7 = 9'd227;
-    localparam [8:0]   N_7 = 9'd18;
-    localparam [127:0] MI_7 = 128'h145c6006645f947098aef91ce47500;
-    localparam [8:0]   M_8 = 9'd223;
-    localparam [8:0]   N_8 = 9'd59;
-    localparam [127:0] MI_8 = 128'h14b9dee09f92a85278fb951d692100;
-    localparam [8:0]   M_9 = 9'd211;
-    localparam [8:0]   N_9 = 9'd74;
-    localparam [127:0] MI_9 = 128'h15e7a05486ad32806a06402c6de500;
-    localparam [8:0]   M_10 = 9'd199;
-    localparam [8:0]   N_10 = 9'd31;
-    localparam [127:0] MI_10 = 128'h1739c64cc2414a213e3f3b09cd4900;
-    localparam [8:0]   M_11 = 9'd197;
-    localparam [8:0]   N_11 = 9'd27;
-    localparam [127:0] MI_11 = 128'h177623470a665693ef9c22f282b300;
-    localparam [8:0]   M_12 = 9'd193;
-    localparam [8:0]   N_12 = 9'd172;
-    localparam [127:0] MI_12 = 128'h17f29e0a2bc6a2a6eb4a7b37347f00;
-    localparam [8:0]   M_13 = 9'd191;
-    localparam [8:0]   N_13 = 9'd154;
-    localparam [127:0] MI_13 = 128'h1832cff226df802aad6b6dc32d0100;
-    localparam [8:0]   M_14 = 9'd181;
-    localparam [8:0]   N_14 = 9'd90;
-    localparam [127:0] MI_14 = 128'h1989112e3455ed14fdb815106f2300;
-    localparam [8:0]   M_15 = 9'd179;
-    localparam [8:0]   N_15 = 9'd9;
-    localparam [127:0] MI_15 = 128'h19d21b6234eb9fa43e0d16bacec500;
+`include "janus_moduli_params.vh"
 
     // --------------------------------------------------------------------------
     // PIPELINE STAGE 1: Precomputed Partial Product LUTs (ROMs)
