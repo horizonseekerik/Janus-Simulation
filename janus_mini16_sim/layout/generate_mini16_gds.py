@@ -37,6 +37,7 @@ Architecture:
 import os
 import sys
 import math
+import shutil
 import numpy as np
 from typing import Tuple, List, Dict, Any
 
@@ -139,7 +140,7 @@ BUMP_PITCH_UM     = 50.00    # 50 um micro-bump pitch
 @gf.cell
 def pcell_sin_straight_wg(length: float = 20.0, width: float = SIN_WIDTH_UM) -> gf.Component:
     """Straight low-loss Si3N4 waveguide (Layer 5/0)."""
-    c = gf.Component()
+    c = gf.Component(f"SIN_STRAIGHT_WG_L{int(length)}_W{int(width*1000)}")
     c.add_polygon([(0, -width/2), (length, -width/2), (length, width/2), (0, width/2)], layer=LAYER_SIN_CORE)
     return c
 
@@ -147,7 +148,7 @@ def pcell_sin_straight_wg(length: float = 20.0, width: float = SIN_WIDTH_UM) -> 
 @gf.cell
 def pcell_sin_sbend_wg(dx: float = 30.0, dy: float = 10.0, width: float = SIN_WIDTH_UM) -> gf.Component:
     """Adiabatic S-bend waveguide in Si3N4 with cubic spline curve (Layer 5/0)."""
-    c = gf.Component()
+    c = gf.Component(f"SIN_SBEND_WG_DX{int(dx)}_DY{int(dy*10)}")
     N = 25
     pts = []
     for i in range(N + 1):
@@ -171,13 +172,14 @@ def pcell_sin_to_si_taper(length: float = 15.0) -> gf.Component:
     Adiabatic inter-layer transition taper between Si3N4 (Layer 5/0) and Si (Layer 1/0).
     Foundry-standard dual-core inverse taper (IL < 0.05 dB).
     """
-    c = gf.Component()
+    c = gf.Component(f"SIN_TO_SI_TAPER_L{int(length)}")
     # Si3N4 inverse taper (Layer 5/0): 800 nm narrowing to 150 nm tip
     c.add_polygon([(0, -SIN_WIDTH_UM/2), (length, -0.075),
                    (length, 0.075), (0, SIN_WIDTH_UM/2)], layer=LAYER_SIN_CORE)
     # Underlying crystalline Silicon inverse taper (Layer 1/0): 150 nm expanding to 450 nm
     c.add_polygon([(0, -0.075), (length, -SI_WIDTH_UM/2),
                    (length, SI_WIDTH_UM/2), (0, 0.075)], layer=LAYER_SI_CORE)
+    c.add_label("SIN_SI_TAPER", position=(length/2, 0.0), layer=LAYER_SIN_CORE)
     return c
 
 
@@ -187,7 +189,7 @@ def pcell_sb2s3_sin_switch_cell() -> gf.Component:
     Low-loss Si3N4 directional coupler with non-volatile Sb2S3 phase-change patch.
     IL = 0.263 dB, ER = 51.9 dB, 0 W static power.
     """
-    c = gf.Component()
+    c = gf.Component("SB2S3_SIN_SWITCH_CELL")
     total_len = COUPLER_LEN_UM + 3.0
     y_bar = COUPLER_GAP_UM / 2 + SIN_WIDTH_UM / 2
     y_cross = -y_bar
@@ -213,13 +215,14 @@ def pcell_sb2s3_sin_switch_cell() -> gf.Component:
     c.add_polygon([(x_pend - 1.2, y_bar + 2.2), (x_pend + 0.5, y_bar + 2.2),
                    (x_pend + 0.5, y_bar + 3.9), (x_pend - 1.2, y_bar + 3.9)], layer=LAYER_TDV_PILLAR)
 
+    c.add_label("SB2S3_SW", position=(total_len/2, y_bar), layer=LAYER_SB2S3_AMORPH)
     return c
 
 
 @gf.cell
 def pcell_sin_mmi_crossing() -> gf.Component:
     """Si3N4 Talbot Self-Imaging MMI Waveguide Crossing (IL < 0.08 dB, XT < -55 dB)."""
-    c = gf.Component()
+    c = gf.Component("SIN_MMI_CROSSING")
     w = MMI_W_UM
     l_mid = MMI_L_UM
     l_tap = MMI_TAPER_UM
@@ -238,25 +241,35 @@ def pcell_sin_mmi_crossing() -> gf.Component:
     c.add_polygon([(-w/2, l_mid/2), (-SIN_WIDTH_UM/2, l_tap + l_mid/2),
                    (SIN_WIDTH_UM/2, l_tap + l_mid/2), (w/2, l_mid/2)], layer=LAYER_SIN_CORE)
 
+    c.add_label("MMI_CROSS", position=(0.0, 0.0), layer=LAYER_SIN_CORE)
     return c
 
 
 @gf.cell
 def pcell_sac2m_apd_with_tdv() -> gf.Component:
     """
-    Germanium-on-Silicon SAC2M APD Photodetector with 3D Vertical Cu TDVs.
+    Germanium-on-Silicon SAC2M APD Photodetector with 3D Vertical Cu TDVs:
     - Crystalline Si base (Layer 1/0)
     - Ge absorption mesa (Layer 20/0)
+    - Guard ring p-n avalanche breakdown suppression (Layer 1/0)
     - Anode/Cathode Metal 1 Copper contacts (Layer 10/0)
-    - 8 um diameter Cu TDV passing directly to CMOS StrongARM latch (Layer 30/0)
+    - Octagonal UBM Pad & 8 um diameter Cu TDV passing directly to CMOS StrongARM latch (Layer 30/0 & 31/0)
     """
-    c = gf.Component()
+    c = gf.Component("SAC2M_APD_WITH_TDV")
     l = APD_LEN_UM
     w = APD_W_UM
 
-    # Silicon Coupling Waveguide (Layer 1/0)
+    # Silicon Coupling Waveguide & Base Slab (Layer 1/0)
     c.add_polygon([(0, -SI_WIDTH_UM/2), (l/2, -SI_WIDTH_UM/2),
                    (l/2, SI_WIDTH_UM/2), (0, SI_WIDTH_UM/2)], layer=LAYER_SI_CORE)
+    c.add_polygon([(l/4 - 1.0, -w/2 - 1.5), (l/4 + l + 1.0, -w/2 - 1.5),
+                   (l/4 + l + 1.0, w/2 + 1.5), (l/4 - 1.0, w/2 + 1.5)], layer=LAYER_SI_CORE)
+
+    # Avalanche Guard Ring Frame around Mesa (Layer 1/0)
+    c.add_polygon([(l/4 - 2.0, -w/2 - 2.8), (l/4 + l + 2.0, -w/2 - 2.8),
+                   (l/4 + l + 2.0, -w/2 - 2.0), (l/4 - 2.0, -w/2 - 2.0)], layer=LAYER_SI_CORE)
+    c.add_polygon([(l/4 - 2.0, w/2 + 2.0), (l/4 + l + 2.0, w/2 + 2.0),
+                   (l/4 + l + 2.0, w/2 + 2.8), (l/4 - 2.0, w/2 + 2.8)], layer=LAYER_SI_CORE)
 
     # Crystalline Germanium Absorption Mesa (Layer 20/0)
     c.add_polygon([(l/4, -w/2), (l/4 + l, -w/2),
@@ -270,11 +283,21 @@ def pcell_sac2m_apd_with_tdv() -> gf.Component:
 
     # Vertical Copper TDV Landing Pad & Pillar to CMOS (Layer 30/0 & 31/0)
     r = TDV_DIAMETER_UM / 2
-    c.add_polygon([(l/4 + 2.5 - r, -w/2 - 2.5 - r), (l/4 + 2.5 + r, -w/2 - 2.5 - r),
-                   (l/4 + 2.5 + r, -w/2 - 2.5 + r), (l/4 + 2.5 - r, -w/2 - 2.5 + r)], layer=LAYER_TDV_PILLAR)
-    c.add_polygon([(l/4 + 2.5 - r - 1.0, -w/2 - 2.5 - r - 1.0), (l/4 + 2.5 + r + 1.0, -w/2 - 2.5 - r - 1.0),
-                   (l/4 + 2.5 + r + 1.0, -w/2 - 2.5 + r + 1.0), (l/4 + 2.5 - r - 1.0, -w/2 - 2.5 + r + 1.0)], layer=LAYER_UBM_BUMP)
+    cx, cy = l/4 + 2.5, -w/2 - 2.5
+    # Octagonal micro-bump geometry
+    pts_ubm = []
+    for deg in range(0, 360, 45):
+        rad = math.radians(deg)
+        pts_ubm.append((cx + (r + 1.5) * math.cos(rad), cy + (r + 1.5) * math.sin(rad)))
+    c.add_polygon(pts_ubm, layer=LAYER_UBM_BUMP)
 
+    pts_tdv = []
+    for deg in range(0, 360, 45):
+        rad = math.radians(deg)
+        pts_tdv.append((cx + r * math.cos(rad), cy + r * math.sin(rad)))
+    c.add_polygon(pts_tdv, layer=LAYER_TDV_PILLAR)
+
+    c.add_label("SAC2M_APD_TDV", position=(cx, cy), layer=LAYER_APD_GE)
     return c
 
 
@@ -340,7 +363,7 @@ def build_monolithic_3d_tile(tile_id: int = 0) -> gf.Component:
       - Middle monolithic SiO2 thermal buffer with high-density Cu TDV pillars
       - Top dual-core Si3N4/Si optical permutation fabric with Sb2S3 switches and SAC2M APDs
     """
-    tile = gf.Component()
+    tile = gf.Component(f"MONOLITHIC_3D_TILE_{tile_id}")
     tile_w = 600.0
     tile_h = 600.0
 
@@ -377,9 +400,11 @@ def build_monolithic_3d_tile(tile_id: int = 0) -> gf.Component:
                              (190.0, y_ch + 12.0), (70.0, y_ch + 12.0)], layer=LAYER_CU_M1)
             tile.add_polygon([(70.0, y_ch - 12.0), (190.0, y_ch - 12.0),
                              (190.0, y_ch - 1.5), (70.0, y_ch - 1.5)], layer=LAYER_CU_M1)
+            tile.add_label(f"LITAO3_MOD_CH{ch}", position=(130.0, y_ch), layer=LAYER_LITAO3_EO)
         else:
             # Dark Reference Channel WG0
             tile.add_ref(pcell_sin_straight_wg(LITAO3_LEN_UM)).move((70.0, y_ch))
+            tile.add_label("DARK_REF_WG0", position=(130.0, y_ch), layer=LAYER_SIN_CORE)
 
     # 3. 4-Stage Binary Tree Fermat Switching Network in Si3N4 (X: 200 um to 460 um)
     stage_x = [205.0, 275.0, 345.0, 415.0]
@@ -431,6 +456,7 @@ def build_monolithic_3d_tile(tile_id: int = 0) -> gf.Component:
         tile.add_ref(taper_cell).move((x_taper, y_ch))
         # SAC2M APD on crystalline Si with vertical Cu TDV directly to bottom StrongARM latch
         tile.add_ref(apd_cell).move((x_apd, y_ch))
+        tile.add_label(f"APD_TDV_CH{ch}", position=(x_apd + 5.0, y_ch), layer=LAYER_APD_GE)
 
     # 5. High-Density Cu-Pillar TDV Grid (10,000 mm^-2 density = 100 um^-2, 50 um pitch)
     for ix in range(11):
@@ -453,6 +479,9 @@ def build_monolithic_3d_tile(tile_id: int = 0) -> gf.Component:
         xp = 40.0 + p_idx * 105.0
         tile.add_polygon([(xp, 15.0), (xp + 4.0, 15.0), (xp + 4.0, 585.0), (xp, 585.0)], layer=LAYER_CU_M2)
 
+    tile.add_label(f"TILE_{tile_id}_3D_CORE", position=(tile_w/2, tile_h - 20.0), layer=LAYER_FLOORPLAN)
+    tile.add_label("16TREE_FERMAT_FABRIC", position=(310.0, 30.0), layer=LAYER_SIN_CORE)
+    tile.add_label("CU_TDV_POWER_GRID", position=(50.0, 50.0), layer=LAYER_TDV_PILLAR)
     return tile
 
 
@@ -483,6 +512,8 @@ def generate_janus_mini16_top_layout() -> gf.Component:
     top.add_polygon([(die_size_um - ring_w, 0), (die_size_um, 0),
                      (die_size_um, die_size_um), (die_size_um - ring_w, die_size_um)], layer=LAYER_SEAL_RING)
     top.add_polygon([(0, 0), (die_size_um, 0), (die_size_um, die_size_um), (0, die_size_um)], layer=LAYER_FLOORPLAN)
+    top.add_label("JANUS_MINI16_3D_TOP_DIE", position=(die_size_um/2, die_size_um - 30.0), layer=LAYER_FLOORPLAN)
+    top.add_label("4LAYER_MOISTURE_SEAL_RING", position=(40.0, die_size_um - 40.0), layer=LAYER_SEAL_RING)
 
     # 2. 4x4 Grid of 3D Monolithic Tiles (16 Tiles Total)
     for row in range(4):
@@ -493,9 +524,10 @@ def generate_janus_mini16_top_layout() -> gf.Component:
 
             tile_ref = top.add_ref(build_monolithic_3d_tile(tile_id=tile_id))
             tile_ref.move((x_pos, y_pos))
+            top.add_label(f"TILE_{tile_id}_LOCATION", position=(x_pos + 300.0, y_pos + 300.0), layer=LAYER_FLOORPLAN)
 
     # 3. Dual Optical Fiber V-Groove Array Grating Couplers (127 um Pitch)
-    gc_cell = gf.Component()
+    gc_cell = gf.Component("JANUS_OPTICAL_FIBER_VGROOVE_COUPLER")
     for i in range(17):
         y_gc = i * 127.0
         # Grating teeth in Si3N4 (Layer 5/0)
@@ -507,11 +539,14 @@ def generate_janus_mini16_top_layout() -> gf.Component:
                                  (xt + 0.315, y_gc + 6.0), (xt, y_gc + 6.0)], layer=LAYER_SIN_CORE)
         gc_cell.add_polygon([(-25.0, y_gc - SIN_WIDTH_UM/2), (0, y_gc - 6.0),
                              (0, y_gc + 6.0), (-25.0, y_gc + SIN_WIDTH_UM/2)], layer=LAYER_SIN_CORE)
+        gc_cell.add_label(f"FIBER_CH{i}", position=(17.5, y_gc), layer=LAYER_SIN_CORE)
 
     top.add_ref(gc_cell).move((35.0, 550.0))
     ref_r = top.add_ref(gc_cell)
     ref_r.mirror((0, 0), (0, 1))
     ref_r.move((die_size_um - 35.0, 550.0))
+    top.add_label("FIBER_VGROOVE_PORT_WEST", position=(20.0, 520.0), layer=LAYER_SIN_CORE)
+    top.add_label("FIBER_VGROOVE_PORT_EAST", position=(die_size_um - 20.0, 520.0), layer=LAYER_SIN_CORE)
 
     # Optical Feed Trunks
     for i in range(17):
@@ -532,6 +567,7 @@ def generate_janus_mini16_top_layout() -> gf.Component:
                      (60.0 + pwr_ring_w, die_size_um - 50.0), (60.0, die_size_um - 50.0)], layer=LAYER_TOP_METAL_PWR)
     top.add_polygon([(die_size_um - 60.0 - pwr_ring_w, 50.0), (die_size_um - 60.0, 50.0),
                      (die_size_um - 60.0, die_size_um - 50.0), (die_size_um - 60.0 - pwr_ring_w, die_size_um - 50.0)], layer=LAYER_TOP_METAL_PWR)
+    top.add_label("GLOBAL_VDD_VSS_POWER_RING", position=(die_size_um/2, 70.0), layer=LAYER_TOP_METAL_PWR)
 
     # 5. Standard Wire-Bond / Solder Bump I/O Pad Ring (Layer 82/0)
     pad_size = 75.0
@@ -541,21 +577,24 @@ def generate_janus_mini16_top_layout() -> gf.Component:
         xp = 200.0 + p * pad_pitch
         top.add_polygon([(xp, 95.0), (xp + pad_size, 95.0),
                          (xp + pad_size, 95.0 + pad_size), (xp, 95.0 + pad_size)], layer=LAYER_PAD_IO)
+        top.add_label(f"IO_PAD_BOT_{p}", position=(xp + pad_size/2, 95.0 + pad_size/2), layer=LAYER_PAD_IO)
         top.add_polygon([(xp, die_size_um - 95.0 - pad_size), (xp + pad_size, die_size_um - 95.0 - pad_size),
                          (xp + pad_size, die_size_um - 95.0), (xp, die_size_um - 95.0)], layer=LAYER_PAD_IO)
+        top.add_label(f"IO_PAD_TOP_{p}", position=(xp + pad_size/2, die_size_um - 95.0 - pad_size/2), layer=LAYER_PAD_IO)
 
     # 6. Global 3.125 GHz H-Tree Clock Trunk (Metal 6: Layer 61/0)
     top.add_polygon([(die_size_um/2 - 8.0, 100.0), (die_size_um/2 + 8.0, 100.0),
                      (die_size_um/2 + 8.0, die_size_um - 100.0), (die_size_um/2 - 8.0, die_size_um - 100.0)], layer=LAYER_METAL6_CLK)
     top.add_polygon([(100.0, die_size_um/2 - 8.0), (die_size_um - 100.0, die_size_um/2 - 8.0),
                      (die_size_um - 100.0, die_size_um/2 + 8.0), (100.0, die_size_um/2 + 8.0)], layer=LAYER_METAL6_CLK)
+    top.add_label("GLOBAL_3.125GHZ_HTREE_CLOCK_SPINE", position=(die_size_um/2, die_size_um/2), layer=LAYER_METAL6_CLK)
 
     # 7. Metrology & Test Structures in Scribe Margin
-    # Calibration Si3N4 waveguide, standalone switch, and vernier marks
     top.add_polygon([(1300.0, 50.0), (1700.0, 50.0),
                      (1700.0, 50.0 + SIN_WIDTH_UM), (1300.0, 50.0 + SIN_WIDTH_UM)], layer=LAYER_SIN_CORE)
     top.add_polygon([(1300.0, die_size_um - 60.0), (1700.0, die_size_um - 60.0),
                      (1700.0, die_size_um - 60.0 + SIN_WIDTH_UM), (1300.0, die_size_um - 60.0 + SIN_WIDTH_UM)], layer=LAYER_SIN_CORE)
+    top.add_label("OPTICAL_TEST_STRUCTURE_SIN", position=(1500.0, 50.0), layer=LAYER_SIN_CORE)
 
     return top
 
@@ -581,9 +620,16 @@ def main():
     print(f"[*] Writing binary GDS II stream file to:\n    {gds_path}")
     top_core.write_gds(gds_path)
 
+    # Ensure companion layer properties file exists
+    lyp_src = os.path.join(out_dir, "janus_mini16_layers.lyp")
+    lyp_top = os.path.join(out_dir, "janus_mini16_layout.lyp")
+    if os.path.exists(lyp_src):
+        shutil.copyfile(lyp_src, lyp_top)
+
     gds_size = os.path.getsize(gds_path)
     print(f"[+] SUCCESS! Complete 3D Monolithic GDS II layout generated.")
     print(f"    - Target File   : {gds_path}")
+    print(f"    - Companion LYP : {lyp_top}")
     print(f"    - File Size     : {gds_size:,} bytes ({gds_size / 1024:.2f} KB)")
     print(f"    - Top Cell      : {top_core.name}")
     print("=" * 75)
