@@ -124,6 +124,8 @@ This directory houses the **verified 5-tier multi-physics co-simulation framewor
 | **Circuit (Tier 3)** | **SciPy & SPICE** | 100 GHz Bessel filtering & eye diagram | `pip install scipy numpy matplotlib` |
 | **Digital (Tier 4)** | **Icarus Verilog & Cocotb** | 12-stage CRT reconstruction RTL verification | `sudo apt-get install iverilog` + `pip install cocotb` |
 | **Math (Tier 5)** | **Microsoft Z3 SMT** | 5 formal mathematical theorem proofs | `pip install z3-solver` |
+| **Physical Layout** | **gdsfactory & gdstk** | 3D Monolithic & 65nm CMOS GDS II stream synthesizer | `pip install gdsfactory gdstk` |
+| **Mask Inspection** | **KLayout (Optional)** | Visual multi-layer GDS II / OASIS CAD viewer & DRC checker | [KLayout Official](https://www.klayout.de/) |
 
 ### Environment Setup
 
@@ -133,7 +135,7 @@ conda create -n janus_env python=3.11 -y
 conda activate janus_env
 
 # Install Python dependencies
-pip install -r ../requirements.txt
+pip install -r requirements.txt
 ```
 
 ## 📦 Quickstart & Usage
@@ -141,7 +143,9 @@ pip install -r ../requirements.txt
 ### Prerequisites
 - Python 3.10+
 - Icarus Verilog (`iverilog`, `vvp`)
+- `gdsfactory` & `gdstk`
 - Optional: MEEP & MPB (WSL Ubuntu recommended)
+- Optional: KLayout (for viewing `.gds` and `.lyp` files)
 
 ```bash
 git clone https://github.com/horizonseekerik/janus-photonic-hardware.git
@@ -154,7 +158,17 @@ pip install -r requirements.txt
 python janus_mini16_sim/run_mini16_full_cosim.py --verbose
 ```
 
-### 2. Evaluate Custom Numbers (Decimal or Hex)
+### 2. Synthesize Physical GDS II Mask Layouts
+```bash
+# Synthesize 3D Photonic Top Die GDS II (Si3N4 Core, LiTaO3, Sb2S3 16-Tree, SAC2M APDs, Cu TDVs)
+python janus_mini16_sim/layout/generate_mini16_gds.py
+
+# Synthesize 65nm LP/GP CMOS Digital Base Die GDS II (StrongARM, Deserializers, SIMD, Dual-LUT SRAM)
+python janus_mini16_sim/layout/generate_cmos_base_gds.py
+```
+Outputs `janus_mini16_layout.gds` (955 KB) and `janus_mini16_cmos_base_layout.gds` (169 KB) with companion `.lyp` layer styling files viewable directly in **KLayout**.
+
+### 3. Evaluate Custom Numbers (Decimal or Hex)
 ```bash
 # Evaluate arbitrary integer
 python janus_mini16_sim/run_mini16_full_cosim.py --val 0xDEADBEEFCAFEBABE
@@ -166,7 +180,7 @@ python janus_mini16_sim/run_mini16_full_cosim.py --mult 123456789 987654321
 python janus_mini16_sim/run_mini16_full_cosim.py --interactive
 ```
 
-### 3. Run AI Model Profiling & GPU Comparison
+### 4. Run AI Model Profiling & GPU Comparison
 ```bash
 # Run all AI layer benchmarks & GPU comparisons
 python janus_mini16_sim/benchmarks/run_ai_profiling.py --all
