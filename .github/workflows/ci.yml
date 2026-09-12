@@ -1,10 +1,11 @@
-﻿name: JANUS Mini 16-Tile Multi-Physics Simulation CI
+name: JANUS Mini 16-Tile Multi-Physics Simulation CI
 
 on:
   push:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
+  workflow_dispatch:
 
 jobs:
   test:
@@ -13,6 +14,8 @@ jobs:
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
+      with:
+        ref: ${{ github.ref }}
 
     - name: Set up Python 3.12
       uses: actions/setup-python@v5
