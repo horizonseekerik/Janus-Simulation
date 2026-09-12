@@ -1,5 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
 <layer-properties>
+  <!-- ================================================================ -->
+  <!-- TOP SiPh / Si3N4 OPTICAL STRATUM  (Layers 1-29)                  -->
+  <!-- ================================================================ -->
   <properties>
     <frame-color>#c83737</frame-color>
     <fill-color>#c83737</fill-color>
@@ -97,22 +100,6 @@
     <source>5/0@1</source>
   </properties>
   <properties>
-    <frame-color>#7f8c8d</frame-color>
-    <fill-color>#7f8c8d</fill-color>
-    <frame-brightness>0</frame-brightness>
-    <fill-brightness>0</fill-brightness>
-    <dither-pattern>I22</dither-pattern>
-    <line-style>I0</line-style>
-    <valid>true</valid>
-    <visible>true</visible>
-    <transparent>false</transparent>
-    <width>1</width>
-    <marked>false</marked>
-    <animation>0</animation>
-    <name>CMOS_Contact_Plug (6/0)</name>
-    <source>6/0@1</source>
-  </properties>
-  <properties>
     <frame-color>#e74c3c</frame-color>
     <fill-color>#e74c3c</fill-color>
     <frame-brightness>0</frame-brightness>
@@ -141,24 +128,8 @@
     <width>1</width>
     <marked>false</marked>
     <animation>0</animation>
-    <name>Metal1_Local_Interconnect (11/0)</name>
+    <name>Metal2_Cu_Power_Clock_Mesh (11/0)</name>
     <source>11/0@1</source>
-  </properties>
-  <properties>
-    <frame-color>#2980b9</frame-color>
-    <fill-color>#2980b9</fill-color>
-    <frame-brightness>0</frame-brightness>
-    <fill-brightness>0</fill-brightness>
-    <dither-pattern>I25</dither-pattern>
-    <line-style>I0</line-style>
-    <valid>true</valid>
-    <visible>true</visible>
-    <transparent>false</transparent>
-    <width>1</width>
-    <marked>false</marked>
-    <animation>0</animation>
-    <name>Via1_Interconnect (12/0)</name>
-    <source>12/0@1</source>
   </properties>
   <properties>
     <frame-color>#d35400</frame-color>
@@ -176,38 +147,9 @@
     <name>Germanium_APD_Absorption_Mesa (20/0)</name>
     <source>20/0@1</source>
   </properties>
-  <properties>
-    <frame-color>#2ecc71</frame-color>
-    <fill-color>#2ecc71</fill-color>
-    <frame-brightness>0</frame-brightness>
-    <fill-brightness>0</fill-brightness>
-    <dither-pattern>I5</dither-pattern>
-    <line-style>I0</line-style>
-    <valid>true</valid>
-    <visible>true</visible>
-    <transparent>false</transparent>
-    <width>1</width>
-    <marked>false</marked>
-    <animation>0</animation>
-    <name>Metal2_Signal_Routing (21/0)</name>
-    <source>21/0@1</source>
-  </properties>
-  <properties>
-    <frame-color>#27ae60</frame-color>
-    <fill-color>#27ae60</fill-color>
-    <frame-brightness>0</frame-brightness>
-    <fill-brightness>0</fill-brightness>
-    <dither-pattern>I26</dither-pattern>
-    <line-style>I0</line-style>
-    <valid>true</valid>
-    <visible>true</visible>
-    <transparent>false</transparent>
-    <width>1</width>
-    <marked>false</marked>
-    <animation>0</animation>
-    <name>Via2_Interconnect (22/0)</name>
-    <source>22/0@1</source>
-  </properties>
+  <!-- ================================================================ -->
+  <!-- 3D INTER-STRATUM VERTICAL INTERCONNECTS  (Layers 30-39)          -->
+  <!-- ================================================================ -->
   <properties>
     <frame-color>#f39c12</frame-color>
     <fill-color>#f39c12</fill-color>
@@ -256,6 +198,10 @@
     <name>Monolithic_SiO2_Thermal_Buffer (32/0)</name>
     <source>32/0@1</source>
   </properties>
+  <!-- ================================================================ -->
+  <!-- ABSTRACT CMOS BLOCK ANNOTATIONS  (Layers 40-49)                  -->
+  <!-- Architectural floorplan outlines; no physical mask shapes here.   -->
+  <!-- ================================================================ -->
   <properties>
     <frame-color>#16a085</frame-color>
     <fill-color>#16a085</fill-color>
@@ -269,7 +215,7 @@
     <width>1</width>
     <marked>false</marked>
     <animation>0</animation>
-    <name>StrongARM_SenseAmp_Latches (40/0)</name>
+    <name>StrongARM_SenseAmp_Latches_ARCH (40/0)</name>
     <source>40/0@1</source>
   </properties>
   <properties>
@@ -285,7 +231,7 @@
     <width>1</width>
     <marked>false</marked>
     <animation>0</animation>
-    <name>Deserializer_1to32_PolyphaseBank (41/0)</name>
+    <name>Deserializer_1to32_PolyphaseBank_ARCH (41/0)</name>
     <source>41/0@1</source>
   </properties>
   <properties>
@@ -301,7 +247,7 @@
     <width>1</width>
     <marked>false</marked>
     <animation>0</animation>
-    <name>SIMD_Wallace_Kogge_32Lane (42/0)</name>
+    <name>SIMD_Wallace_Kogge_32Lane_ARCH (42/0)</name>
     <source>42/0@1</source>
   </properties>
   <properties>
@@ -317,7 +263,7 @@
     <width>1</width>
     <marked>false</marked>
     <animation>0</animation>
-    <name>DualLUT_1p5MB_SRAM_Array (43/0)</name>
+    <name>DualLUT_1p5MB_SRAM_Array_ARCH (43/0)</name>
     <source>43/0@1</source>
   </properties>
   <properties>
@@ -333,7 +279,7 @@
     <width>1</width>
     <marked>false</marked>
     <animation>0</animation>
-    <name>Central_ROM_JIR_1p5MB (44/0)</name>
+    <name>Central_ROM_JIR_1p5MB_ARCH (44/0)</name>
     <source>44/0@1</source>
   </properties>
   <properties>
@@ -349,7 +295,7 @@
     <width>1</width>
     <marked>false</marked>
     <animation>0</animation>
-    <name>Accumulator_160Bit_CSA (45/0)</name>
+    <name>Accumulator_160Bit_CSA_ARCH (45/0)</name>
     <source>45/0@1</source>
   </properties>
   <properties>
@@ -365,14 +311,227 @@
     <width>1</width>
     <marked>false</marked>
     <animation>0</animation>
-    <name>Thermal_Diode_ADCs (46/0)</name>
+    <name>Thermal_Diode_ADCs_ARCH (46/0)</name>
     <source>46/0@1</source>
+  </properties>
+  <!-- ================================================================ -->
+  <!-- PHYSICAL 65nm LP/GP CMOS MASK LAYERS  (Layers 100-199)           -->
+  <!-- Offset +100 from conventional CMOS numbering; no collision with   -->
+  <!-- optical stratum layers 1-29.                                      -->
+  <!-- ================================================================ -->
+  <properties>
+    <frame-color>#c83737</frame-color>
+    <fill-color>#c83737</fill-color>
+    <frame-brightness>0</frame-brightness>
+    <fill-brightness>-30</fill-brightness>
+    <dither-pattern>I2</dither-pattern>
+    <line-style>I0</line-style>
+    <valid>true</valid>
+    <visible>true</visible>
+    <transparent>false</transparent>
+    <width>1</width>
+    <marked>false</marked>
+    <animation>0</animation>
+    <name>CMOS_NWell_ActiveDiff (101/0)</name>
+    <source>101/0@1</source>
+  </properties>
+  <properties>
+    <frame-color>#646464</frame-color>
+    <fill-color>#646464</fill-color>
+    <frame-brightness>0</frame-brightness>
+    <fill-brightness>-30</fill-brightness>
+    <dither-pattern>I5</dither-pattern>
+    <line-style>I0</line-style>
+    <valid>true</valid>
+    <visible>true</visible>
+    <transparent>false</transparent>
+    <width>1</width>
+    <marked>false</marked>
+    <animation>0</animation>
+    <name>CMOS_Polysilicon_Gate_65nm (102/0)</name>
+    <source>102/0@1</source>
+  </properties>
+  <properties>
+    <frame-color>#7f8c8d</frame-color>
+    <fill-color>#7f8c8d</fill-color>
+    <frame-brightness>0</frame-brightness>
+    <fill-brightness>-30</fill-brightness>
+    <dither-pattern>I22</dither-pattern>
+    <line-style>I0</line-style>
+    <valid>true</valid>
+    <visible>true</visible>
+    <transparent>false</transparent>
+    <width>1</width>
+    <marked>false</marked>
+    <animation>0</animation>
+    <name>CMOS_Tungsten_Contact_Plug (106/0)</name>
+    <source>106/0@1</source>
+  </properties>
+  <properties>
+    <frame-color>#3498db</frame-color>
+    <fill-color>#3498db</fill-color>
+    <frame-brightness>0</frame-brightness>
+    <fill-brightness>-30</fill-brightness>
+    <dither-pattern>I3</dither-pattern>
+    <line-style>I0</line-style>
+    <valid>true</valid>
+    <visible>true</visible>
+    <transparent>false</transparent>
+    <width>1</width>
+    <marked>false</marked>
+    <animation>0</animation>
+    <name>CMOS_Metal1_Local_Interconnect (111/0)</name>
+    <source>111/0@1</source>
+  </properties>
+  <properties>
+    <frame-color>#2980b9</frame-color>
+    <fill-color>#2980b9</fill-color>
+    <frame-brightness>0</frame-brightness>
+    <fill-brightness>-30</fill-brightness>
+    <dither-pattern>I25</dither-pattern>
+    <line-style>I0</line-style>
+    <valid>true</valid>
+    <visible>true</visible>
+    <transparent>false</transparent>
+    <width>1</width>
+    <marked>false</marked>
+    <animation>0</animation>
+    <name>CMOS_Via1_Interconnect (112/0)</name>
+    <source>112/0@1</source>
+  </properties>
+  <properties>
+    <frame-color>#2ecc71</frame-color>
+    <fill-color>#2ecc71</fill-color>
+    <frame-brightness>0</frame-brightness>
+    <fill-brightness>-30</fill-brightness>
+    <dither-pattern>I5</dither-pattern>
+    <line-style>I0</line-style>
+    <valid>true</valid>
+    <visible>true</visible>
+    <transparent>false</transparent>
+    <width>1</width>
+    <marked>false</marked>
+    <animation>0</animation>
+    <name>CMOS_Metal2_Signal_Routing (121/0)</name>
+    <source>121/0@1</source>
+  </properties>
+  <properties>
+    <frame-color>#27ae60</frame-color>
+    <fill-color>#27ae60</fill-color>
+    <frame-brightness>0</frame-brightness>
+    <fill-brightness>-30</fill-brightness>
+    <dither-pattern>I26</dither-pattern>
+    <line-style>I0</line-style>
+    <valid>true</valid>
+    <visible>true</visible>
+    <transparent>false</transparent>
+    <width>1</width>
+    <marked>false</marked>
+    <animation>0</animation>
+    <name>CMOS_Via2_Interconnect (122/0)</name>
+    <source>122/0@1</source>
+  </properties>
+  <properties>
+    <frame-color>#f39c12</frame-color>
+    <fill-color>#f39c12</fill-color>
+    <frame-brightness>0</frame-brightness>
+    <fill-brightness>-30</fill-brightness>
+    <dither-pattern>I6</dither-pattern>
+    <line-style>I0</line-style>
+    <valid>true</valid>
+    <visible>true</visible>
+    <transparent>false</transparent>
+    <width>1</width>
+    <marked>false</marked>
+    <animation>0</animation>
+    <name>CMOS_Metal3_Lane_Bus (131/0)</name>
+    <source>131/0@1</source>
+  </properties>
+  <properties>
+    <frame-color>#e67e22</frame-color>
+    <fill-color>#e67e22</fill-color>
+    <frame-brightness>0</frame-brightness>
+    <fill-brightness>-30</fill-brightness>
+    <dither-pattern>I7</dither-pattern>
+    <line-style>I0</line-style>
+    <valid>true</valid>
+    <visible>true</visible>
+    <transparent>false</transparent>
+    <width>1</width>
+    <marked>false</marked>
+    <animation>0</animation>
+    <name>CMOS_Via3_Interconnect (132/0)</name>
+    <source>132/0@1</source>
+  </properties>
+  <properties>
+    <frame-color>#9b59b6</frame-color>
+    <fill-color>#9b59b6</fill-color>
+    <frame-brightness>0</frame-brightness>
+    <fill-brightness>-30</fill-brightness>
+    <dither-pattern>I13</dither-pattern>
+    <line-style>I0</line-style>
+    <valid>true</valid>
+    <visible>true</visible>
+    <transparent>false</transparent>
+    <width>1</width>
+    <marked>false</marked>
+    <animation>0</animation>
+    <name>CMOS_Metal4_SRAM_WL_BL (141/0)</name>
+    <source>141/0@1</source>
+  </properties>
+  <properties>
+    <frame-color>#8e44ad</frame-color>
+    <fill-color>#8e44ad</fill-color>
+    <frame-brightness>0</frame-brightness>
+    <fill-brightness>-30</fill-brightness>
+    <dither-pattern>I17</dither-pattern>
+    <line-style>I0</line-style>
+    <valid>true</valid>
+    <visible>true</visible>
+    <transparent>false</transparent>
+    <width>1</width>
+    <marked>false</marked>
+    <animation>0</animation>
+    <name>CMOS_Via4_Interconnect (142/0)</name>
+    <source>142/0@1</source>
+  </properties>
+  <properties>
+    <frame-color>#1abc9c</frame-color>
+    <fill-color>#1abc9c</fill-color>
+    <frame-brightness>0</frame-brightness>
+    <fill-brightness>-30</fill-brightness>
+    <dither-pattern>I1</dither-pattern>
+    <line-style>I0</line-style>
+    <valid>true</valid>
+    <visible>true</visible>
+    <transparent>false</transparent>
+    <width>1</width>
+    <marked>false</marked>
+    <animation>0</animation>
+    <name>CMOS_Metal5_Accumulator_Bus (151/0)</name>
+    <source>151/0@1</source>
+  </properties>
+  <properties>
+    <frame-color>#16a085</frame-color>
+    <fill-color>#16a085</fill-color>
+    <frame-brightness>0</frame-brightness>
+    <fill-brightness>-30</fill-brightness>
+    <dither-pattern>I20</dither-pattern>
+    <line-style>I0</line-style>
+    <valid>true</valid>
+    <visible>true</visible>
+    <transparent>false</transparent>
+    <width>1</width>
+    <marked>false</marked>
+    <animation>0</animation>
+    <name>CMOS_Via5_Interconnect (152/0)</name>
+    <source>152/0@1</source>
   </properties>
   <properties>
     <frame-color>#34495e</frame-color>
     <fill-color>#34495e</fill-color>
     <frame-brightness>0</frame-brightness>
-    <fill-brightness>0</fill-brightness>
+    <fill-brightness>-30</fill-brightness>
     <dither-pattern>I24</dither-pattern>
     <line-style>I0</line-style>
     <valid>true</valid>
@@ -381,14 +540,14 @@
     <width>1</width>
     <marked>false</marked>
     <animation>0</animation>
-    <name>Metal6_HTee_Clock_Network (61/0)</name>
-    <source>61/0@1</source>
+    <name>CMOS_Metal6_HTree_Clock_3125MHz (161/0)</name>
+    <source>161/0@1</source>
   </properties>
   <properties>
     <frame-color>#2c3e50</frame-color>
     <fill-color>#2c3e50</fill-color>
     <frame-brightness>0</frame-brightness>
-    <fill-brightness>0</fill-brightness>
+    <fill-brightness>-30</fill-brightness>
     <dither-pattern>I27</dither-pattern>
     <line-style>I0</line-style>
     <valid>true</valid>
@@ -397,14 +556,14 @@
     <width>1</width>
     <marked>false</marked>
     <animation>0</animation>
-    <name>Via6_Interconnect (62/0)</name>
-    <source>62/0@1</source>
+    <name>CMOS_Via6_Interconnect (162/0)</name>
+    <source>162/0@1</source>
   </properties>
   <properties>
     <frame-color>#f39c12</frame-color>
     <fill-color>#f39c12</fill-color>
     <frame-brightness>0</frame-brightness>
-    <fill-brightness>0</fill-brightness>
+    <fill-brightness>-30</fill-brightness>
     <dither-pattern>I30</dither-pattern>
     <line-style>I0</line-style>
     <valid>true</valid>
@@ -413,14 +572,14 @@
     <width>1</width>
     <marked>false</marked>
     <animation>0</animation>
-    <name>TopMetal_Power_Mesh_VDD_VSS (71/0)</name>
-    <source>71/0@1</source>
+    <name>CMOS_TopMetal_Power_Mesh_VDD_VSS (171/0)</name>
+    <source>171/0@1</source>
   </properties>
   <properties>
     <frame-color>#f1c40f</frame-color>
     <fill-color>#f1c40f</fill-color>
     <frame-brightness>0</frame-brightness>
-    <fill-brightness>0</fill-brightness>
+    <fill-brightness>-30</fill-brightness>
     <dither-pattern>I32</dither-pattern>
     <line-style>I0</line-style>
     <valid>true</valid>
@@ -429,14 +588,14 @@
     <width>1</width>
     <marked>false</marked>
     <animation>0</animation>
-    <name>Passivation_UBM_Opening (81/0)</name>
-    <source>81/0@1</source>
+    <name>CMOS_Passivation_UBM_Opening (181/0)</name>
+    <source>181/0@1</source>
   </properties>
   <properties>
     <frame-color>#e67e22</frame-color>
     <fill-color>#e67e22</fill-color>
     <frame-brightness>0</frame-brightness>
-    <fill-brightness>0</fill-brightness>
+    <fill-brightness>-30</fill-brightness>
     <dither-pattern>I33</dither-pattern>
     <line-style>I0</line-style>
     <valid>true</valid>
@@ -445,9 +604,12 @@
     <width>1</width>
     <marked>false</marked>
     <animation>0</animation>
-    <name>IO_BondPad_Ring (82/0)</name>
-    <source>82/0@1</source>
+    <name>CMOS_IO_BondPad_Ring (182/0)</name>
+    <source>182/0@1</source>
   </properties>
+  <!-- ================================================================ -->
+  <!-- DIE PERIMETER & METROLOGY  (Layers 190, 199)                     -->
+  <!-- ================================================================ -->
   <properties>
     <frame-color>#7f8c8d</frame-color>
     <fill-color>#7f8c8d</fill-color>
@@ -461,8 +623,8 @@
     <width>1</width>
     <marked>false</marked>
     <animation>0</animation>
-    <name>SealRing_Moisture_Barrier (90/0)</name>
-    <source>90/0@1</source>
+    <name>SealRing_4Layer_Moisture_Barrier (190/0)</name>
+    <source>190/0@1</source>
   </properties>
   <properties>
     <frame-color>#bdc3c7</frame-color>
@@ -477,7 +639,7 @@
     <width>1</width>
     <marked>false</marked>
     <animation>0</animation>
-    <name>Floorplan_Keepout_Boundary (99/0)</name>
-    <source>99/0@1</source>
+    <name>Floorplan_Keepout_Boundary (199/0)</name>
+    <source>199/0@1</source>
   </properties>
 </layer-properties>
