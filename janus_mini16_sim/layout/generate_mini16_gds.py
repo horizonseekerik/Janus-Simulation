@@ -40,7 +40,23 @@ import math
 import numpy as np
 from typing import Tuple, List, Dict, Any
 
+# Ensure workspace root is on sys.path
+_ws_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if _ws_root not in sys.path:
+    sys.path.insert(0, _ws_root)
+
 import gdsfactory as gf
+
+from janus_mini16_sim.layout.generate_cmos_base_gds import (
+    pcell_cmos_strongarm_latch_unit,
+    pcell_cmos_deserializer_bank,
+    pcell_cmos_simd_wallace_kogge_array,
+    pcell_cmos_duallut_sram_macro,
+    pcell_cmos_central_rom_jir_macro,
+    pcell_cmos_accumulator_160bit,
+    pcell_cmos_thermal_sensor_unit,
+    build_cmos_base_tile,
+)
 
 # Activate generic layout environment
 gf.gpdk.PDK.activate()
@@ -64,7 +80,27 @@ LAYER_TDV_PILLAR      = (30, 0)  # Vertical Copper Through-Dielectric Vias
 LAYER_UBM_BUMP        = (31, 0)  # Under-Bump Metallization & Micro-Bumps
 LAYER_THERMAL_BUF     = (32, 0)  # Monolithic 250 um SiO2 Thermal Buffer Boundary
 
-# Bottom 65nm CMOS Base Stratum Layers
+# Standard 65nm CMOS Physical Mask Layers
+LAYER_NW_DIFF         = (1, 0)   # N-Well & Active Diffusion (P/N OD)
+LAYER_POLY_GATE       = (2, 0)   # Polysilicon Gate (65nm drawn L_g)
+LAYER_CONTACT         = (6, 0)   # Tungsten Contact Plugs
+LAYER_METAL1          = (11, 0)  # Metal 1 (Local Interconnect & StrongARM sense nodes)
+LAYER_VIA1            = (12, 0)  # Via 1
+LAYER_METAL2          = (21, 0)  # Metal 2 (Intra-tile signal routing)
+LAYER_VIA2            = (22, 0)  # Via 2
+LAYER_METAL3          = (31, 0)  # Metal 3 (Lane bus & SIMD cross-routing)
+LAYER_VIA3            = (32, 0)  # Via 3
+LAYER_METAL4          = (41, 0)  # Metal 4 (Dual-LUT SRAM local wordlines/bitlines)
+LAYER_VIA4            = (42, 0)  # Via 4
+LAYER_METAL5          = (51, 0)  # Metal 5 (Accumulator & CRT adder bus)
+LAYER_VIA5            = (52, 0)  # Via 5
+LAYER_METAL6_CLK      = (61, 0)  # Metal 6 (3.125 GHz H-Tree Clock Distribution)
+LAYER_VIA6            = (62, 0)  # Via 6
+LAYER_TOP_METAL_PWR   = (71, 0)  # Top Thick Metal (VDD/VSS Power Grid Mesh)
+LAYER_PASSIVATION_UBM = (81, 0)  # Passivation Opening & Under-Bump Metallization (UBM)
+LAYER_PAD_IO          = (82, 0)  # Wire-bond & Solder Bump I/O Pads
+
+# Bottom 65nm CMOS Base Stratum Abstract Layers
 LAYER_CMOS_STRONGARM  = (40, 0)  # StrongARM Regenerative Sensing Latches
 LAYER_CMOS_DESER      = (41, 0)  # 1:32 Polyphase Time-Interleaved Deserializer
 LAYER_CMOS_SIMD       = (42, 0)  # 32-Lane SIMD Wallace-Kogge Arithmetic Unit
@@ -72,6 +108,7 @@ LAYER_CMOS_SRAM       = (43, 0)  # 1.5 MB Dual-LUT Volatile Local SRAM
 LAYER_CMOS_ROM        = (44, 0)  # 1.5 MB Central Non-Volatile ROM Macro
 LAYER_CMOS_ACC160     = (45, 0)  # 160-Bit Binary Carry-Save Accumulator
 LAYER_CMOS_THERMAL    = (46, 0)  # JIR Thermal Diodes & 10-bit Delta-Sigma ADCs
+
 
 # Perimeter & Metrology
 LAYER_SEAL_RING       = (90, 0)  # 4-Layer Moisture Seal Ring
@@ -314,8 +351,9 @@ def build_monolithic_3d_tile(tile_id: int = 0) -> gf.Component:
     tile.add_polygon([(5.0, 5.0), (tile_w - 5.0, 5.0),
                       (tile_w - 5.0, tile_h - 5.0), (5.0, tile_h - 5.0)], layer=LAYER_THERMAL_BUF)
 
-    # 1. Place Bottom CMOS Base Stratum (Layers 40-46)
-    tile.add_ref(pcell_cmos_base_tile_circuitry())
+    # 1. Place Bottom 65nm CMOS Base Stratum with high-density VLSI circuits
+    # (StrongARM Latches, 1:32 Deserializers, 32-Lane SIMD Wallace-Kogge, 1.5MB SRAM/ROM, Accumulator, ADCs)
+    tile.add_ref(build_cmos_base_tile(tile_id=tile_id))
 
     # Component cell handles
     sin_sw = pcell_sb2s3_sin_switch_cell()
@@ -484,7 +522,35 @@ def generate_janus_mini16_top_layout() -> gf.Component:
             top.add_polygon([(die_size_um - 180.0, y_gc - SIN_WIDTH_UM/2), (die_size_um - 10.0, y_gc - SIN_WIDTH_UM/2),
                              (die_size_um - 10.0, y_gc + SIN_WIDTH_UM/2), (die_size_um - 180.0, y_gc + SIN_WIDTH_UM/2)], layer=LAYER_SIN_CORE)
 
-    # 4. Metrology & Test Structures in Scribe Margin
+    # 4. Global 65nm CMOS VDD/VSS Power Ring (Top Metal: Layer 71/0)
+    pwr_ring_w = 40.0
+    top.add_polygon([(60.0, 50.0), (die_size_um - 60.0, 50.0),
+                     (die_size_um - 60.0, 50.0 + pwr_ring_w), (60.0, 50.0 + pwr_ring_w)], layer=LAYER_TOP_METAL_PWR)
+    top.add_polygon([(60.0, die_size_um - 50.0 - pwr_ring_w), (die_size_um - 60.0, die_size_um - 50.0 - pwr_ring_w),
+                     (die_size_um - 60.0, die_size_um - 50.0), (60.0, die_size_um - 50.0)], layer=LAYER_TOP_METAL_PWR)
+    top.add_polygon([(60.0, 50.0), (60.0 + pwr_ring_w, 50.0),
+                     (60.0 + pwr_ring_w, die_size_um - 50.0), (60.0, die_size_um - 50.0)], layer=LAYER_TOP_METAL_PWR)
+    top.add_polygon([(die_size_um - 60.0 - pwr_ring_w, 50.0), (die_size_um - 60.0, 50.0),
+                     (die_size_um - 60.0, die_size_um - 50.0), (die_size_um - 60.0 - pwr_ring_w, die_size_um - 50.0)], layer=LAYER_TOP_METAL_PWR)
+
+    # 5. Standard Wire-Bond / Solder Bump I/O Pad Ring (Layer 82/0)
+    pad_size = 75.0
+    pad_pitch = 120.0
+    num_pads_x = int((die_size_um - 400.0) / pad_pitch)
+    for p in range(num_pads_x):
+        xp = 200.0 + p * pad_pitch
+        top.add_polygon([(xp, 95.0), (xp + pad_size, 95.0),
+                         (xp + pad_size, 95.0 + pad_size), (xp, 95.0 + pad_size)], layer=LAYER_PAD_IO)
+        top.add_polygon([(xp, die_size_um - 95.0 - pad_size), (xp + pad_size, die_size_um - 95.0 - pad_size),
+                         (xp + pad_size, die_size_um - 95.0), (xp, die_size_um - 95.0)], layer=LAYER_PAD_IO)
+
+    # 6. Global 3.125 GHz H-Tree Clock Trunk (Metal 6: Layer 61/0)
+    top.add_polygon([(die_size_um/2 - 8.0, 100.0), (die_size_um/2 + 8.0, 100.0),
+                     (die_size_um/2 + 8.0, die_size_um - 100.0), (die_size_um/2 - 8.0, die_size_um - 100.0)], layer=LAYER_METAL6_CLK)
+    top.add_polygon([(100.0, die_size_um/2 - 8.0), (die_size_um - 100.0, die_size_um/2 - 8.0),
+                     (die_size_um - 100.0, die_size_um/2 + 8.0), (100.0, die_size_um/2 + 8.0)], layer=LAYER_METAL6_CLK)
+
+    # 7. Metrology & Test Structures in Scribe Margin
     # Calibration Si3N4 waveguide, standalone switch, and vernier marks
     top.add_polygon([(1300.0, 50.0), (1700.0, 50.0),
                      (1700.0, 50.0 + SIN_WIDTH_UM), (1300.0, 50.0 + SIN_WIDTH_UM)], layer=LAYER_SIN_CORE)
