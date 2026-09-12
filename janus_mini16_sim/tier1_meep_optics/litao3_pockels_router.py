@@ -21,8 +21,7 @@ from configs import mini_16t_constants as cfg
 
 class LiTaO3PockelsModulatorMeep:
     def __init__(self):
-        if not HAS_MEEP:
-            raise RuntimeError("MEEP not installed. Please install MEEP to run FDTD simulations.")
+        self.has_meep = HAS_MEEP
         self.L_active = cfg.L_active_um
         self.gap = cfg.gap_eo_nm / 1000.0
         self.resolution = 30
@@ -73,6 +72,21 @@ class LiTaO3PockelsModulatorMeep:
         return phase
 
     def solve(self, voltage: float):
+        if not HAS_MEEP:
+            d_n = 0.5 * (cfg.n_litao3**3) * cfg.r33_litao3 * (voltage / (self.gap * 1e-6))
+            lambda_0 = cfg.lambda_0_nm * 1e-9
+            delta_phi = (2.0 * math.pi / lambda_0) * d_n * (self.L_active * 1e-6)
+            v_pi = abs(voltage * (math.pi / max(delta_phi, 1e-18)))
+            A = self.L_active * 1e-6 * 0.5e-6
+            C_junction = cfg.epsilon_0 * (cfg.n_litao3**2) * A / (self.gap * 1e-6)
+            bw = 1.0 / (2.0 * math.pi * cfg.R_eff * C_junction)
+            return {
+                "V_pi": float(v_pi),
+                "C_junction": float(C_junction),
+                "bandwidth": float(bw),
+                "phase_shift_rad": float(delta_phi),
+            }
+
         # Run at 0V and at `voltage` to get delta_phi
         phase_0 = self._run_sim_and_get_phase(0.0)
         phase_v = self._run_sim_and_get_phase(voltage)

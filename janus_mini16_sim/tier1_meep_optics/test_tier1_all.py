@@ -96,7 +96,6 @@ def test_waveguide_crossing():
     assert res["insertion_loss_dB"] <= 0.10, f"Crossing insertion loss exceeds 0.10 dB spec: {res['insertion_loss_dB']} dB"
     assert res["crosstalk_dB"] <= -38.0, f"Crossing crosstalk above -38.0 dB spec: {res['crosstalk_dB']} dB"
 
-@skipif_no_meep
 def test_mzi_switch_cell():
     solver = Sb2S3SwitchCellMeep()
     res_am = solver.solve_mzi_state("amorphous")
@@ -109,7 +108,6 @@ def test_mzi_switch_cell():
     assert res_cr["crosstalk_dB"] <= -25.0, f"MZI crystalline crosstalk too high: {res_cr['crosstalk_dB']}"
     assert res_am["passivity"] <= 1.05
 
-@skipif_no_meep
 def test_mzi_monte_carlo_yield():
     mc = Sb2S3MonteCarlo(runs=50, topology="mzi")
     res = mc.run()

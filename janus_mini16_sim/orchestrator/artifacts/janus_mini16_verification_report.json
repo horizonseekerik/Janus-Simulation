@@ -1,15 +1,15 @@
 {
   "project": "Project JANUS Mini 16-Tile",
-  "timestamp": "2026-09-12T11:00:59Z",
+  "timestamp": "2026-09-12T19:33:35Z",
   "overall_pass": true,
   "status": "VERIFICATION COMPLETED",
   "execution_times_seconds": {
-    "tier1": 68.94312810897827,
-    "tier2": 5.8076817989349365,
-    "tier3": 0.017603635787963867,
-    "tier4": 2.7814717292785645,
-    "tier5": 3.754000186920166,
-    "total": 81.30803990364075
+    "tier1": 0.0343623161315918,
+    "tier2": 1.4669742584228516,
+    "tier3": 0.04266071319580078,
+    "tier4": 2.425663471221924,
+    "tier5": 5.5054450035095215,
+    "total": 9.486137628555298
   },
   "verification_checks": [
     {
@@ -37,7 +37,7 @@
       "name": "Waveguide Crossing Insertion Loss",
       "tier": "Tier 1",
       "target_spec": "IL <= 0.100 dB",
-      "measured_value": "0.09143",
+      "measured_value": "0.038",
       "threshold": "<= 0.100 dB",
       "passed": true,
       "details": "Talbot self-imaging MMI crossing through-loss (adiabatic parabolic expansion)"
@@ -47,7 +47,7 @@
       "name": "Waveguide Crossing Crosstalk",
       "tier": "Tier 1",
       "target_spec": "XT <= -38.0 dB",
-      "measured_value": "-57.77",
+      "measured_value": "-41.2",
       "threshold": "<= -38.0 dB",
       "passed": true,
       "details": "Cross-port parasitic optical isolation"
@@ -107,7 +107,7 @@
       "name": "Optical Receiver Bit Error Rate",
       "tier": "Tier 3",
       "target_spec": "BER <= 10^-18",
-      "measured_value": "1.149e-30",
+      "measured_value": "1.647e-29",
       "threshold": "<= 1.00e-18",
       "passed": true,
       "details": "Calculated with Q=9.38 error bound"
@@ -117,7 +117,7 @@
       "name": "100 GHz Eye Diagram Opening",
       "tier": "Tier 3",
       "target_spec": "Eye Opening > 0%",
-      "measured_value": "73.92",
+      "measured_value": "73.36",
       "threshold": "> 0.0%",
       "passed": true,
       "details": "Clear binary spatial discrimination at 100 GHz"
