@@ -1,6 +1,6 @@
 <testsuites name="results">
   <testsuite name="all" package="all">
-    <property name="random_seed" value="1788879967" />
-    <testcase name="test_pipelined_crt_reconstruction" classname="test_crt_cocotb" file="C:\Users\hp\Desktop\Janus Update\janus_mini16_sim\tier4_rtl_digital\test_crt_cocotb.py" lineno="23" time="0.7409365177154541" sim_time_ns="10.171" ratio_time="13.72722191013134" />
+    <property name="random_seed" value="1789210750" />
+    <testcase name="test_pipelined_crt_reconstruction" classname="test_crt_cocotb" file="C:\Users\hp\Desktop\Janus Update\janus_mini16_sim\tier4_rtl_digital\test_crt_cocotb.py" lineno="23" time="0.6621017456054688" sim_time_ns="10.171" ratio_time="15.361687335077146" />
   </testsuite>
 </testsuites>

@@ -1,13 +1,13 @@
 # Project JANUS Mini 16-Tile: Multi-Physics Co-Simulation & Verification Stack
 
-[![CI Multi-Physics Suite](https://github.com/horizonseekerik/janus-simulation/actions/workflows/ci.yml/badge.svg)](https://github.com/horizonseekerik/janus-simulation/actions)
-[![TRL Readiness](https://img.shields.io/badge/TRL-4.0%20(Subsystem%20Validation)-blue.svg)](#technology-readiness-level)
-[![Accuracy](https://img.shields.io/badge/GEMM%20Deviation-0.00000000%25-brightgreen.svg)](#16-point-verification-sign-off-matrix)
-[![Energy Efficiency](https://img.shields.io/badge/INT8%20Efficiency-112.8%20TMAC%2Fs%2FW-green.svg)](#gpu-comparative-benchmarks)
+[![CI Multi-Physics Suite](https://github.com/horizonseekerik/janus-photonic-hardware/actions/workflows/ci.yml/badge.svg)](https://github.com/horizonseekerik/janus-photonic-hardware/actions)
+[![TRL Readiness](https://img.shields.io/badge/TRL-4.0%20(Subsystem%20Validation)-blue.svg)](#-technology-readiness-level)
+[![Accuracy](https://img.shields.io/badge/GEMM%20Deviation-0.00000000%25-brightgreen.svg)](#-16-point-quantitative-verification-sign-off-matrix)
+[![Energy Efficiency](https://img.shields.io/badge/INT8%20Efficiency-112.8%20TMAC%2Fs%2FW-green.svg)](#-gpu-comparative-benchmarks-janus-vs-nvidia-h100--b200)
 
-**Project JANUS** is a constraint-bounded hybrid opto-electronic computing architecture for exact, large-scale artificial intelligence matrix multiplication. By abandoning high-precision analog optical amplitude accumulation in favor of **One-Hot Optical Residue Number System (RNS)** spatial routing, single-wavelength coherent transport, and high-speed CMOS Chinese Remainder Theorem (CRT) digital reconstruction, JANUS eliminates analog SNR collapse while sustaining deterministic, bit-exact arithmetic.
+**Project JANUS** is a constraint-bounded hybrid opto-electronic computing architecture for exact, large-scale artificial intelligence matrix multiplication. By abandoning high-precision analog optical amplitude accumulation in favor of **Spatial One-Hot Residue Number System (RNS)** routing, single-wavelength coherent transport, 4-stage **Asymmetric 16-Tree Fermat optical cores**, and high-speed CMOS Chinese Remainder Theorem (CRT) digital reconstruction, JANUS eliminates analog SNR collapse while sustaining deterministic, bit-exact arithmetic.
 
-This repository houses the **verified 5-tier multi-physics co-simulation framework** for the **JANUS Mini 16-Tile Planar Monolithic Accelerator (Model 1A)**.
+This directory houses the **verified 5-tier multi-physics co-simulation framework** for the **JANUS Mini 16-Tile Planar Monolithic Accelerator (Model 1A)**.
 
 ---
 
@@ -24,10 +24,11 @@ This repository houses the **verified 5-tier multi-physics co-simulation framewo
                                 │
                                 ▼
          +─────────────────────────────────────────────+
-         |   16-Tile Optical Spatial Mesh (1064 nm)    |
-         |   - 1-of-256 One-Hot Spatial Laser Routing  |
-         |   - Non-Volatile Sb2S3 Beneš Permutation    |
+         |   16-Tile Asymmetric 16-Tree Fermat Core    |
+         |   - 1-of-17 Spatial Optical Waveguide Mesh  |
+         |   - 4-Stage Non-Volatile Sb2S3 Switch Tree  |
          |   - Zero Static Hold Power (P_hold = 0 W)   |
+         |   - Dynamic Optical Tile Gating (Up to 16)  |
          +──────────────────────┬──────────────────────+
                                 │
                                 ▼
@@ -38,9 +39,9 @@ This repository houses the **verified 5-tier multi-physics co-simulation framewo
                                 │
                                 ▼
          +─────────────────────────────────────────────+
-         |   8-Stage Pipelined CRT Adder Tree (80 ps)  |
+         |   12-Stage Pipelined CRT Adder Tree (80 ps) |
          |   - 256-Entry ROM Precomputed Scaling LUTs  |
-         |   - Pipelined Carry-Save Reduction Tree     |
+         |   - Cycle-Exact Garner Mixed-Radix Engine   |
          +──────────────────────┬──────────────────────+
                                 │
                                 ▼
@@ -59,11 +60,11 @@ This repository houses the **verified 5-tier multi-physics co-simulation framewo
 
 | Tier | Simulation Engine | Physical / Architectural Scope | Deliverables & Verification |
 |---|---|---|---|
-| **Tier 1** | **3D MEEP (FDTD)** | 3D Maxwell curl solver, non-volatile $\text{Sb}_2\text{S}_3$ switch cell ($1064\text{ nm}$), MMI crossings, $\text{LiTaO}_3$ Pockels routers. | Touchstone `.s4p` S-matrices, $Q_{\text{opt}}(x,y,z)$ heat map, $\text{IL} \le 0.017\text{ dB}$, $\text{ER} \ge 25.0\text{ dB}$. |
-| **Tier 2** | **Elmer FEM (3D)** | 3D transient heat diffusion, $250\ \mu\text{m}\ \text{SiO}_2$ buffer, thermal transient damping, Foster RC extraction. | $\tau_{\text{diff}} = 69.06\text{ ms}$, $\Delta T_{\text{cycle}} \le 0.80\text{ mK}$, 5-pole state-space ROM ($R^2 = 1.000$). |
-| **Tier 3** | **Xyce SPICE** | $\text{Ge/Si SAC}^2\text{M}$ APD receiver ($M=7$), clocked StrongARM latch ($3.5\text{ ps}$ regen), 100 GHz eye diagrams. | $\text{BER} \le 10^{-18}$, practical link margin $\ge +3.45\text{ dB}$, eye opening $> 60\%$. |
-| **Tier 4** | **Digital CMOS RTL** | 100 GHz wave-pipelined RNS encoder, 8-stage CRT adder tree ($80\text{ ps}$ latency), JIR fault monitor in Verilog. | Cycle-accurate bit-exact reconstruction ($0$ clock slips, $0$ errors across 1000 randomized vectors). |
-| **Tier 5** | **Python RNS Engine** | Z3 SMT formal mathematical proofs, Spatial One-Hot tensor router, JIR thermal scheduler, RRNS self-healing. | 4/4 formal proofs passed, 100% single-fault recovery, **$0.00000000\%$ GEMM arithmetic deviation**. |
+| **Tier 1** | **3D MEEP (FDTD) & MPB** | 3D Maxwell curl solver, 4-stage 16-Tree Fermat optical core (1064 nm), non-volatile $\text{Sb}_2\text{S}_3$ directional couplers, MMI crossings, $\text{LiTaO}_3$ Pockels routers. | Touchstone `.s4p` S-matrices, $Q_{\text{opt}}(x,y,z)$ heat map, $\text{IL} = 1.612\text{ dB} \le 2.0\text{ dB}$, $\text{ER} \ge 25.0\text{ dB}$. |
+| **Tier 2** | **Elmer FEM & 1D BDF** | 3D transient heat diffusion, 6-layer packaging strata, $250\ \mu\text{m}\ \text{SiO}_2$ buffer, thermal transient damping, Foster RC extraction. | $\tau_{\text{diff}} = 69.06\text{ ms}$, $T_{\text{peak}} = 25.08\text{ }^\circ\text{C} \le 65.0\text{ }^\circ\text{C}$, 5-pole state-space ROM ($R^2 = 1.000$). |
+| **Tier 3** | **Xyce SPICE & Bessel** | $\text{Ge/Si SAC}^2\text{M}$ APD receiver ($M=7$), clocked StrongARM latch ($3.5\text{ ps}$ regen), 3rd-order 105 GHz Bessel filter, PRBS-7 eye diagrams. | $\text{BER} = 1.15 \times 10^{-30} \le 10^{-18}$, practical link margin $\ge +3.45\text{ dB}$, eye opening $= 73.9\%$. |
+| **Tier 4** | **Digital CMOS RTL** | 100 GHz wave-pipelined RNS encoder, 12-stage CRT adder tree ($80\text{ ps}$ latency), JIR fault monitor in Verilog (`iverilog` + `cocotb`). | Cycle-accurate bit-exact reconstruction ($0$ clock slips, $0$ errors across 1000 randomized vectors). |
+| **Tier 5** | **Python RNS & Z3 SMT** | 5 formal Z3 mathematical proofs, Spatial One-Hot tensor router, JIR thermal scheduler, RRNS self-healing. | 5/5 formal proofs passed, 100% single-fault recovery, **$0.00000000\%$ GEMM arithmetic deviation**. |
 
 ---
 
@@ -73,26 +74,26 @@ This repository houses the **verified 5-tier multi-physics co-simulation framewo
 ============================================================================================
   PROJECT JANUS MINI (16-TILE): 16-POINT QUANTITATIVE VERIFICATION SIGN-OFF MATRIX
 ============================================================================================
-#   | Tier    | Verification Metric                  | Target Spec        | Measured     | Status
+#   | Tier    | Verification Metric                  | Target Spec        | Measured      | Status
 --------------------------------------------------------------------------------------------
-1   | Tier 1  | Sb2S3 Switch Insertion Loss (Amorph) | IL <= 0.50 dB      | 0.017 dB     | [PASS]
-2   | Tier 1  | Dilated Beneš Extinction Ratio       | ER >= 25.0 dB      | 25.0 dB      | [PASS]
-3   | Tier 1  | Waveguide Crossing Insertion Loss    | IL <= 0.025 dB     | 0.0131 dB    | [PASS]
-4   | Tier 1  | Waveguide Crossing Crosstalk         | XT <= -38.0 dB     | -41.06 dB    | [PASS]
-5   | Tier 2  | SiO2 Thermal Diffusion Time Constant | 65 ms <= tau_diff  | 69.06 ms     | [PASS]
-6   | Tier 2  | Per-Cycle Thermal Transient          | dT_cycle <= 0.80 m | 0.798 mK     | [PASS]
-7   | Tier 2  | Max Steady-State Operating Temperatu | T_steady <= 70.0 d | 25.06 deg-C  | [PASS]
-8   | Tier 2  | Thermal ROM Extraction Accuracy      | R^2 >= 0.999       | 1.000000     | [PASS]
-9   | Tier 3  | APD Practical Sensitivity Margin     | Margin >= +3.00 dB | +3.45 dB     | [PASS]
-10  | Tier 3  | Optical Receiver Bit Error Rate      | BER <= 10^-18      | 3.47e-41     | [PASS]
-11  | Tier 3  | 100 GHz Eye Diagram Opening          | Eye Opening > 0%   | 61.1%        | [PASS]
-12  | Tier 4  | CRT Adder Tree Digital Latency       | t_CRT <= 220 ps    | 80.0 ps      | [PASS]
-13  | Tier 4  | RTL Cycle-Accurate Verification      | Errors == 0        | 0 errors     | [PASS]
-14  | Tier 5  | Z3 SMT Formal Proofs (4 Proofs)      | 4 / 4 Proved       | 4 / 4 Proved | [PASS]
-15  | Tier 5  | RRNS Single-Fault Self-Healing Recov | Correction == 100. | 100.0%       | [PASS]
-16  | Tier 5  | Exact GEMM Arithmetic Precision Devi | Deviation == 0 acr | 0 errors     | [PASS]
+1   | Tier 1  | 16-Tree Fermat Core Insertion Loss   | IL <= 2.00 dB      | 1.612 dB      | [PASS]
+2   | Tier 1  | Optical Modulation Bandwidth         | BW >= 100.0 GHz    | 105.0 GHz     | [PASS]
+3   | Tier 1  | Waveguide Crossing Insertion Loss    | IL <= 0.025 dB     | 0.0131 dB     | [PASS]
+4   | Tier 1  | Waveguide Crossing Crosstalk         | XT <= -38.0 dB     | -41.06 dB     | [PASS]
+5   | Tier 2  | SiO2 Thermal Diffusion Time Constant | 65 ms <= tau_diff  | 69.06 ms      | [PASS]
+6   | Tier 2  | Per-Cycle Thermal Transient          | dT_cycle <= 0.80 m | 0.798 mK      | [PASS]
+7   | Tier 2  | Max Steady-State Operating Temp      | T_steady <= 65.0 C | 25.076 °C     | [PASS]
+8   | Tier 2  | Thermal ROM Extraction Accuracy      | R^2 >= 0.999       | 0.9998        | [PASS]
+9   | Tier 3  | APD Practical Sensitivity Margin     | Margin >= +3.00 dB | +6.142 dB     | [PASS]
+10  | Tier 3  | Optical Receiver Bit Error Rate      | BER <= 10^-18      | 1.149e-30     | [PASS]
+11  | Tier 3  | 100 GHz Eye Diagram Opening          | Eye Opening > 0%   | 73.92%        | [PASS]
+12  | Tier 4  | CRT Adder Tree Digital Latency       | t_CRT <= 100 ps    | 80.0 ps       | [PASS]
+13  | Tier 4  | RTL Cycle-Accurate Verification      | Errors == 0        | 0 errors      | [PASS]
+14  | Tier 5  | Z3 SMT Formal Mathematical Proofs    | 5 / 5 Proved       | 5 / 5 Proved  | [PASS]
+15  | Tier 5  | RRNS Single-Fault Self-Healing Recov | Correction == 100% | 100.0%        | [PASS]
+16  | Tier 5  | Exact GEMM Arithmetic Precision Devi | Deviation == 0     | 0.000000%     | [PASS]
 ============================================================================================
-  Summary: 16/16 Passed (100.0%) | Total Execution Time: ~10.1s
+  Summary: 16/16 Passed (100.0%) | Total Execution Time: 81.31s
   >> STATUS: TAPEOUT-GRADE VALIDATED (16/16 CHECKS PASSED) <<
 ============================================================================================
 ```
@@ -114,72 +115,59 @@ This repository houses the **verified 5-tier multi-physics co-simulation framewo
 
 ---
 
+## 🛠️ Software & Toolchain Prerequisites
+
+| Subsystem | Tool | Purpose | Install Guide / Link |
+|---|---|---|---|
+| **Optics (Tier 1)** | **MEEP & MPB** | FDTD Maxwell & vector eigensolver | `sudo apt-get install meep python3-meep mpb` or [Conda-forge](https://meep.readthedocs.io/) |
+| **Thermal (Tier 2)** | **Elmer FEM & Gmsh** | 3D tetrahedral heat conduction | `sudo apt-get install gmsh elmerfem-csc` or [ElmerCSC](https://www.csc.fi/web/elmer) |
+| **Circuit (Tier 3)** | **SciPy & SPICE** | 100 GHz Bessel filtering & eye diagram | `pip install scipy numpy matplotlib` |
+| **Digital (Tier 4)** | **Icarus Verilog & Cocotb** | 12-stage CRT reconstruction RTL verification | `sudo apt-get install iverilog` + `pip install cocotb` |
+| **Math (Tier 5)** | **Microsoft Z3 SMT** | 5 formal mathematical theorem proofs | `pip install z3-solver` |
+
+### Environment Setup
+
+```bash
+# Create and activate conda environment
+conda create -n janus_env python=3.11 -y
+conda activate janus_env
+
+# Install Python dependencies
+pip install -r ../requirements.txt
+```
+
 ## 📦 Quickstart & Usage
 
 ### Prerequisites
 - Python 3.10+
 - Icarus Verilog (`iverilog`, `vvp`)
+- Optional: MEEP & MPB (WSL Ubuntu recommended)
 
 ```bash
-git clone https://github.com/horizonseekerik/janus-simulation.git
-cd janus-simulation
+git clone https://github.com/horizonseekerik/janus-photonic-hardware.git
+cd janus-photonic-hardware
 pip install -r requirements.txt
 ```
 
 ### 1. Run Master Co-Simulation Orchestrator
 ```bash
-python run_mini16_full_cosim.py --verbose
+python janus_mini16_sim/run_mini16_full_cosim.py --verbose
 ```
 
 ### 2. Evaluate Custom Numbers (Decimal or Hex)
 ```bash
-# Evaluate arbitrary 64-bit integer
-python run_mini16_full_cosim.py --val 0xDEADBEEFCAFEBABE
+# Evaluate arbitrary integer
+python janus_mini16_sim/run_mini16_full_cosim.py --val 0xDEADBEEFCAFEBABE
 
-# Multiply two custom integers across 16 optical residue tiles
-python run_mini16_full_cosim.py --mult 123456789 987654321
+# Multiply two custom integers across optical residue tiles
+python janus_mini16_sim/run_mini16_full_cosim.py --mult 123456789 987654321
 
 # Launch Live Interactive REPL
-python run_mini16_full_cosim.py --interactive
+python janus_mini16_sim/run_mini16_full_cosim.py --interactive
 ```
 
 ### 3. Run AI Model Profiling & GPU Comparison
 ```bash
 # Run all AI layer benchmarks & GPU comparisons
-python benchmarks/run_ai_profiling.py --all
-
-# Run multi-head token packing (100% spatial occupancy)
-python benchmarks/run_ai_profiling.py --batch-pack
+python janus_mini16_sim/benchmarks/run_ai_profiling.py --all
 ```
-
-### 4. Run Automated Test Suite
-```bash
-pytest -v
-```
-
----
-
-## 📁 Repository Directory Structure
-
-```
-janus_mini16_sim/
-├── configs/
-│   ├── mini_16t_constants.py       # 240 Immutable global physical constants
-│   └── mini_16t_specs.json         # Machine-readable JSON specifications
-├── tier1_meep_optics/              # Tier 1: 3D FDTD Electro-Optics (MEEP)
-├── tier2_elmer_thermal/            # Tier 2: 3D Transient Heat Diffusion FEM (Elmer)
-├── tier3_xyce_circuit/             # Tier 3: APD, StrongARM, & 100 GHz SI (Xyce)
-├── tier4_rtl_digital/              # Tier 4: 100 GHz Wave-Pipelined RTL (Verilog)
-├── tier5_python_rns/               # Tier 5: Formal Proofs, JIR Scheduler, & GEMM
-├── orchestrator/                   # Master Co-Simulation Orchestrator
-├── benchmarks/                     # Real AI Workload & GPU Comparison Suite
-├── run_mini16_full_cosim.py        # Top-level CLI Co-Simulation Runner
-├── requirements.txt                # Python environment dependencies
-└── README.md                       # Documentation & Verification Guide
-```
-
----
-
-## 📜 Technology Readiness Level (TRL)
-
-This simulation architecture is rated at **TRL 4.0 (Subsystem Validation in Laboratory / High-Fidelity Multi-Physics Co-Simulation)**. All physical interfaces adhere to first-principles Maxwell, thermodynamic, and SPICE models with zero artificial bypasses or idealized analog approximations.

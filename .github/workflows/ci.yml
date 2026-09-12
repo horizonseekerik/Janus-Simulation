@@ -1,0 +1,42 @@
+﻿name: JANUS Mini 16-Tile Multi-Physics Simulation CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+    - name: Install System Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y iverilog
+
+    - name: Install Python Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest cocotb
+
+    - name: Run Master Co-Simulation Orchestrator
+      run: |
+        python janus_mini16_sim/run_mini16_full_cosim.py --verbose
+
+    - name: Run Multi-Tier Automated Unit Tests
+      run: |
+        pytest janus_mini16_sim/tier5_python_rns/test_tier5_all.py -v
+        pytest janus_mini16_sim/tier1_meep_optics/test_tier1_all.py -v
+        pytest janus_mini16_sim/tier2_elmer_thermal/test_tier2_all.py -v
+        pytest janus_mini16_sim/tier3_xyce_circuit/test_tier3_all.py -v

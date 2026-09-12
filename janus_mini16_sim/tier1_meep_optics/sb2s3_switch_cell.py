@@ -685,3 +685,7 @@ if __name__ == "__main__":
     print("\nSimulating Crystalline State (L=39.0 um)...")
     res_cr = solver.solve_state("crystalline")
     print(f"Crystalline: IL={res_cr['insertion_loss_dB']:.4f} dB, XT={res_cr['crosstalk_dB']:.2f} dB, Passivity={res_cr['passivity']:.4f}")
+
+
+# Backward compatibility alias
+Sb2S3SwitchCellFDTD = Sb2S3SwitchCellMeep

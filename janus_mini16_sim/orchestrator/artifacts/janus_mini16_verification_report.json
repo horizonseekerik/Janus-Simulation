@@ -1,15 +1,15 @@
 {
   "project": "Project JANUS Mini 16-Tile",
-  "timestamp": "2026-09-08T16:23:14Z",
+  "timestamp": "2026-09-12T11:00:59Z",
   "overall_pass": true,
   "status": "VERIFICATION COMPLETED",
   "execution_times_seconds": {
-    "tier1": 62.76252818107605,
-    "tier2": 5.028490781784058,
-    "tier3": 0.014976263046264648,
-    "tier4": 2.6070306301116943,
-    "tier5": 5.35869574546814,
-    "total": 75.77217149734497
+    "tier1": 68.94312810897827,
+    "tier2": 5.8076817989349365,
+    "tier3": 0.017603635787963867,
+    "tier4": 2.7814717292785645,
+    "tier5": 3.754000186920166,
+    "total": 81.30803990364075
   },
   "verification_checks": [
     {
@@ -24,13 +24,13 @@
     },
     {
       "id": 2,
-      "name": "Dilated Bene\u0161 Extinction Ratio",
+      "name": "16-Tree Signal-to-Crosstalk Ratio (SCR)",
       "tier": "Tier 1",
-      "target_spec": "ER >= 25.0 dB",
-      "measured_value": "104.3",
-      "threshold": ">= 25.0 dB",
+      "target_spec": "SCR >= 18.0 dB",
+      "measured_value": "18.96",
+      "threshold": ">= 18.0 dB",
       "passed": true,
-      "details": "Dilated Bene\u0161 on/off contrast (2 stages x ER_cell)"
+      "details": "16-Tree Fermat Core worst-case signal vs total leakage across non-target leaves"
     },
     {
       "id": 3,
@@ -107,7 +107,7 @@
       "name": "Optical Receiver Bit Error Rate",
       "tier": "Tier 3",
       "target_spec": "BER <= 10^-18",
-      "measured_value": "3.135e-34",
+      "measured_value": "1.149e-30",
       "threshold": "<= 1.00e-18",
       "passed": true,
       "details": "Calculated with Q=9.38 error bound"
@@ -117,7 +117,7 @@
       "name": "100 GHz Eye Diagram Opening",
       "tier": "Tier 3",
       "target_spec": "Eye Opening > 0%",
-      "measured_value": "75.39",
+      "measured_value": "73.92",
       "threshold": "> 0.0%",
       "passed": true,
       "details": "Clear binary spatial discrimination at 100 GHz"
@@ -150,14 +150,14 @@
       "measured_value": "4",
       "threshold": "All 4 Proved",
       "passed": true,
-      "details": "Coprimality, dynamic range, bijection, completeness"
+      "details": "Coprimality, dynamic range, bijection, 16-tree Fermat completeness"
     },
     {
       "id": 15,
       "name": "RRNS Single-Fault Self-Healing Recovery",
       "tier": "Tier 5",
       "target_spec": "Correction == 100.0%",
-      "measured_value": "1",
+      "measured_value": "100.0%",
       "threshold": "== 100.0%",
       "passed": true,
       "details": "2000 Monte Carlo trials with BER injection"

@@ -152,23 +152,33 @@ R_eff: float = 25.0  # Effective resistance (Ohm)
 C_junction: float = 63.66e-15  # Junction capacitance (F) (Note: back-calculated to hit 100 GHz — keep but add honest comment)
 
 # ==============================================================================
-# 2.6 MINI 16-TILE ARCHITECTURAL TOPOLOGY
+# 2.6 MINI 16-TILE ARCHITECTURAL TOPOLOGY (16-Tree Fermat Extension)
 # ==============================================================================
+HAS_FERMAT_16TREE: bool = True  # Enable 16th tree (WG16) for Fermat Prime Z_17 and Z_257
 N_tiles: int = 16  # Number of independent residue tiles [All]
 N_dim: int = 32  # Matrix dimension per tile (32 x 32 mesh) [All]
 N_mult_per_tile: int = 1024  # Multipliers per tile (N_dim^2 = 32^2) [All]
 N_mult_total: int = 16384  # Total optical multipliers (N_tiles * N_mult_per_tile) [All]
-N_alphabet: int = 256  # Waveguide alphabet per multiplier (1-Hot 8-bit) [T1, T5]
-N_alphabet_bits: int = 8  # Bit-width of spatial alphabet (log2(256)) [T4, T5]
-N_wg_total: int = 4194304  # Total spatial waveguides (N_mult_total * N_alphabet) [T1]
-S_benes: int = 15  # Benes switching stages (2*log2(256) - 1) [T1, T5]
-N_switch_per_mult: int = 1920  # Switches per multiplier fabric ((N/2) * S) [T1, T5]
-N_switch_total: int = 31457280  # Total Sb2S3 switch cells (~31.46 M) [T1, T2]
-N_apd_total: int = 4194304  # Total SAC2M Ge/Si APD detectors (~4.19 M) [T3]
+N_alphabet: int = 17  # Waveguide alphabet per multiplier (Z_17: 0..16, WG0 omitted) [T1, T5]
+N_alphabet_bits: int = 5  # Bit-width to span 17 residues (log2(17) rounded up) [T4, T5]
+N_wg_active: int = 16  # Active waveguides per multiplier (WG1..WG16, WG0 dark) [T1]
+N_wg_total: int = 262144  # Total active spatial waveguides (N_mult_total * N_wg_active) [T1]
+S_tree: int = 4  # 16-Tree binary demux stages (log2(16)) [T1, T5]
+S_benes: int = 15  # Legacy Beneš switching stages — retained for comparison benchmarks [T1, T5]
+N_switch_per_tree: int = 15  # Switches per individual binary tree (1+2+4+8) [T1]
+N_trees_per_mult: int = 16  # 16 independent trees per multiplier (WG1..WG16) [T1]
+N_switch_per_mult: int = 240  # Switches per multiplier (16 trees x 15 switches) [T1, T5]  # 15-Tree: 225, Beneš: 1920
+N_switch_total: int = 3932160  # Total Sb2S3 switch cells (~3.93 M) [T1, T2]  # 15-Tree: 3.69M, Beneš: 31.46M
+N_apd_total: int = 278528  # Total SAC2M Ge/Si APD detectors (16384 * 17 channels) [T3]
 N_active_per_cycle: int = 16384  # Active photons per 10 ps cycle [T1, T3, T5]
 N_active_per_phase: int = 8192  # Active photons per 5 ps half-cycle phase [T1, T3]
-alpha_spatial: float = 1.0 / 256.0  # Spatial activity factor (1-in-N sparsity) [T3, T5]
-alpha_spatial_decimal: float = 0.00390625  # Decimal spatial activity factor [T3, T5]
+alpha_spatial: float = 1.0 / 17.0  # Spatial activity factor (1-in-17 sparsity in Z_17) [T3, T5]
+alpha_spatial_decimal: float = 0.0588235  # Decimal spatial activity factor [T3, T5]
+MAX_SINGLE_PRODUCT: int = 256  # 16 * 16 = 256 (strictly bounded < 257 for zero overflow) [T1, T5]
+FERMAT_MODULUS_17: int = 17  # Fermat Prime F_1 = 2^(2^1) + 1 = 17 [T5]
+FERMAT_MODULUS_257: int = 257  # Fermat Prime F_2 = 2^(2^2) + 1 = 257 [T5]
+N_switch_16tree_mult: int = 240  # 16-Tree Fermat Core switches per multiplier (16 trees x 15 switches) [T1, T5]
+N_switch_15tree_mult: int = 225  # Reference: 15-Tree baseline switches per multiplier
 
 # ==============================================================================
 # 2.7 DIE GEOMETRY & Z-AXIS PHYSICAL STACK
@@ -324,13 +334,18 @@ L_split_per_stage: float = 3.0103  # Ideal per-stage splitting loss (dB) [T1]
 L_split_ideal: float = 39.13  # Total ideal splitting loss (dB) [T1]
 # L_mmi_excess_per_stage: float = 0.30  # MMI excess loss per stage (dB) [T1] # COMPUTED BY TIER 1
 # L_mmi_excess_total: float = 3.90  # Total MMI excess loss (dB) [T1] # COMPUTED BY TIER 1
-# L_benes_per_stage: float = 0.50  # Dilated Benes loss per stage (dB) [T1] # COMPUTED BY TIER 1
-# L_benes_total: float = 7.50  # Total 15-stage Benes loss (dB) [T1] # COMPUTED BY TIER 1
+# L_benes_per_stage: float = 0.50  # LEGACY: Dilated Benes loss per stage (dB) [T1]
+# L_benes_total: float = 7.50  # LEGACY: Total 15-stage Benes loss (dB) [T1]
+L_tree_per_stage: float = 0.40  # 16-Tree switch loss per stage (dB) [T1]
+L_tree_total: float = 1.61  # Total 4-stage 16-Tree insertion loss (dB) [T1]  # was: ~6.06 dB (Beneš)
+SCR_15tree_worst_dB: float = 18.96  # 15-Tree worst-case Signal-to-Crosstalk Ratio (dB) [T1]
+SCR_16tree_worst_dB: float = 18.96  # 16-Tree Fermat Core worst-case Signal-to-Crosstalk Ratio (dB) [T1]
 L_propagation_coupling: float = 1.50  # Propagation & interlayer loss (dB) [T1]
 L_excess_total: float = 12.90  # Total excess path loss (dB) [T1]
 L_distribution_total: float = 52.03  # Total distribution loss (dB) [T1, T3]
 # IL_switch_cell: float = 0.10  # Sb2S3 switch insertion loss (dB) [T1] # COMPUTED BY TIER 1
-# ER_dilated_benes: float = 25.0  # Dilated Benes extinction ratio (dB) [T1] # COMPUTED BY TIER 1
+# ER_dilated_benes: float = 25.0  # LEGACY: Dilated Benes extinction ratio (dB) [T1]
+# NOTE: Replaced by SCR_16tree_worst_dB = 18.96 dB above
 
 P_litao3_routers: float = 0.51  # LiTaO3 router power (W) [T3]
 P_apd_detectors: float = 0.16  # Ge/Si APD array power (W) [T3]
@@ -350,7 +365,8 @@ tau_fwhm_max: float = 5.0e-12  # Maximum optical pulse FWHM (s) [T1]
 t_mod: float = 10.0e-12  # EO injection pulse interval (s) [T1, T3]
 t_wire: float = 1.33e-12  # Local electrical interconnect delay (s) [T3, T4]
 t_guard: float = 3.5e-12  # Inter-pulse guard margin (s) [T1, T3]
-t_opt_benes: float = 750e-12  # 15-stage Benes propagation delay (s) [T1]
+t_opt_tree: float = 1.33e-12  # 16-Tree 4-stage optical flight delay (1.33 ps) [T1]  # was: t_opt_benes=750ps
+t_opt_benes: float = 750e-12  # LEGACY: 15-stage Benes propagation delay (s) [T1] — retained for comparison
 t_crt: float = 80e-12  # CRT adder-tree delay (80 ps = 8 stages @ 10 ps) [T4]
 N_crt_pipeline_stages: int = 8  # CRT pipelined adder tree stages [T4]
 T_latency_total: float = 963e-12  # Total end-to-end latency (963 ps) [T1-T4]
@@ -360,7 +376,7 @@ t_reconfig_window: float = 100e-6  # PCM full reconfiguration window (s) [T5]
 # ==============================================================================
 # 2.23 - 2.25 RNS ARITHMETIC, THROUGHPUT & EFFICIENCY
 # ==============================================================================
-m_max: int = 256  # Maximum modulus value [T5]
+m_max: int = 257  # Maximum modulus value (Fermat Prime F_2 = 257) [T5]
 m_bits: int = 8  # Bit-width per residue channel [T4, T5]
 k_int4: int = 1  # Tiles needed for INT4 (ceil(2*4/8)) [T5]
 k_int8: int = 2  # Tiles needed for INT8 (ceil(2*8/8)) [T5]
@@ -421,7 +437,9 @@ SNR_adc_floor: float = 1.76  # ADC SNR floor offset (dB) [T5]
 SPEC_IL_switch_cell_max_dB: float = 0.50  # Target: MZI switch cell IL <= 0.50 dB (Method 1A + 1B)
 SPEC_IL_crossing_max_dB: float = 0.10  # Target: routable crossing IL <= 0.10 dB (Chen & Ma Talbot focus)
 SPEC_XT_crossing_min_dB: float = -38.0  # Target: crossing XT <= -38.0 dB
-SPEC_ER_benes_min_dB: float = 25.0  # Target: Benes ER > 25 dB
+SPEC_SCR_15tree_min_dB: float = 18.0  # Target: 15-Tree SCR >= 18.0 dB (worst-case measured: 18.96 dB)
+SPEC_SCR_16tree_min_dB: float = 18.0  # Target: 16-Tree Fermat Core SCR >= 18.0 dB
+SPEC_ER_benes_min_dB: float = 25.0  # LEGACY: Benes ER > 25 dB — retained for comparison benchmarks
 SPEC_BER_target: float = 1e-18  # Target BER
 SPEC_T_max_operating_C: float = 70.0  # Max operating temperature
 

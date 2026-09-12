@@ -1,6 +1,6 @@
-﻿from tier1_meep_optics.sb2s3_switch_cell import Sb2S3SwitchCellFDTD
+from tier1_meep_optics.sb2s3_switch_cell import Sb2S3SwitchCellMeep
 
-s = Sb2S3SwitchCellFDTD()
+s = Sb2S3SwitchCellMeep()
 r_cr = s.solve_state("crystalline")
 print("CR IL:", r_cr["insertion_loss_dB"])
 print("CR XT:", r_cr["crosstalk_dB"])

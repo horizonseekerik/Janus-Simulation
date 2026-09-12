@@ -81,17 +81,28 @@ def test_spatial_one_hot_router_alg5c():
     diff = int(np.sum(np.abs(C_opt - C_ref)))
     assert diff == 0, f"SpatialOneHotAccelerator signed deviation: {diff}"
 
-    # 4. Adversarial datapath verification: corrupting Beneš traversal MUST fail optical multiplication
+    # 4. Adversarial datapath verification: corrupting router traversal MUST alter optical product
     test_tile = acc.tiles[0]
-    orig_traverse = test_tile.benes.traverse
-    test_tile.benes.traverse = lambda x: np.zeros(len(x), dtype=int)
-    try:
-        corrupted_out = test_tile.multiply_accumulate(np.array([[3]]), np.array([[5]]))
-        assert False, "Adversarial check failed: corrupted Beneš traversal was not detected!"
-    except Exception:
-        pass  # Expected: optical photodetector detection caught corrupted traversal
-    finally:
-        test_tile.benes.traverse = orig_traverse
+    if test_tile.use_benes:
+        orig_traverse = test_tile.benes.traverse
+        test_tile.benes.traverse = lambda x: np.zeros(len(x), dtype=int)
+        try:
+            corrupted_out = test_tile.multiply_accumulate(np.array([[3]]), np.array([[5]]))
+            assert False, "Adversarial check failed: corrupted Beneš traversal was not detected!"
+        except Exception:
+            pass  # Expected: optical photodetector detection caught corrupted traversal
+        finally:
+            test_tile.benes.traverse = orig_traverse
+    else:
+        # Active 16-Tree optical routing: corrupting transfer route MUST yield mismatch
+        orig_route = test_tile.tree_router.route
+        test_tile.tree_router.route = lambda x, w: (orig_route(x, w) + 1) % test_tile.modulus
+        try:
+            corrupted_out = test_tile.multiply_accumulate(np.array([[3]]), np.array([[5]]))
+            expected_prod = (3 * 5) % test_tile.modulus
+            assert corrupted_out[0, 0, 0] != expected_prod, "Adversarial check failed: corrupted 16-Tree routing was not detected!"
+        finally:
+            test_tile.tree_router.route = orig_route
 
 
 def test_jir_thermal_scheduler_alg5d():
