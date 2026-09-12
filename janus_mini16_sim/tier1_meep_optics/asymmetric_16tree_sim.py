@@ -15,10 +15,12 @@ from typing import Dict, Tuple, List
 class OpticalSwitchSpecs:
     loss_per_switch_db: float = 0.40      # Insertion loss per 1x2 or 2x2 switch stage (dB)
     extinction_ratio_db: float = 25.0     # On/Off extinction ratio (dB)
-    waveguide_loss_db_per_cm: float = 1.5 # Silicon strip waveguide propagation loss (dB/cm)
+    waveguide_loss_db_per_cm: float = 0.10 # Silicon Nitride (Si3N4) core propagation loss (dB/cm)
+    taper_loss_db: float = 0.035          # Inter-layer adiabatic taper loss Si3N4-to-Si (dB)
     stage_pitch_um: float = 25.0          # Longitudinal distance between switch stages (um)
-    group_index: float = 4.0              # Si waveguide group refractive index
-    wavelength_nm: float = 1550.0         # Operating wavelength (C-band)
+    group_index: float = 2.10             # Si3N4 waveguide group refractive index (at 1064 nm)
+    wavelength_nm: float = 1064.0         # Operating wavelength (Yb carrier)
+
 
 class Asymmetric16TreeCore:
     """
@@ -113,10 +115,11 @@ class Asymmetric16TreeCore:
         for p_out, leaf_idx in current_beams:
             power_distribution[leaf_idx] += p_out
 
-        # Waveguide propagation loss
+        # Si3N4 Waveguide propagation loss and adiabatic inter-layer taper to Si
         path_length_cm = (self.num_stages * self.specs.stage_pitch_um) * 1e-4
-        wg_transmission = 10.0 ** (-(self.specs.waveguide_loss_db_per_cm * path_length_cm) / 10.0)
+        wg_transmission = 10.0 ** (-(self.specs.waveguide_loss_db_per_cm * path_length_cm + self.specs.taper_loss_db) / 10.0)
         power_distribution *= wg_transmission
+
 
         selected_leaf = int(np.argmax(power_distribution))
         peak_power = power_distribution[selected_leaf]

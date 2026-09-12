@@ -18,30 +18,29 @@ This directory houses the **verified 5-tier multi-physics co-simulation framewor
                                 │
                                 ▼
          +─────────────────────────────────────────────+
-         |     CMOS 4-Stage RNS Modulo Encoders        |
-         |     (Decomposes into 16 coprime channels)   |
+         |     65nm CMOS Base Die Stratum              |
+         |     - 4-Stage Modulo RNS Encoders           |
+         |     - 1.5 MB Dual-LUT SRAM & Central ROM    |
          +──────────────────────┬──────────────────────+
-                                │
+                                │ (Vertical RF Traveling Wave)
                                 ▼
          +─────────────────────────────────────────────+
-         |   16-Tile Asymmetric 16-Tree Fermat Core    |
-         |   - 1-of-17 Spatial Optical Waveguide Mesh  |
-         |   - 4-Stage Non-Volatile Sb2S3 Switch Tree  |
-         |   - Zero Static Hold Power (P_hold = 0 W)   |
-         |   - Dynamic Optical Tile Gating (Up to 16)  |
+         |   Top Photonic Stratum: Dual Si3N4/Si Stack |
+         |   - Primary Core: Low-Loss Si3N4 (0.1 dB/cm)|
+         |   - Zero Two-Photon Absorption (TPA)        |
+         |   - 16-Tree Fermat Core (4-Stage Sb2S3)     |
+         |   - Adiabatic Inverse Taper (Si3N4 -> Si)   |
+         |   - Ge/Si SAC2M APDs on Crystalline Si Seed |
          +──────────────────────┬──────────────────────+
-                                │
-                                ▼
+                                │ (Vertical Copper TDVs, R < 0.05 Ω)
+                                ▼ (Across 250 µm SiO2 Thermal Buffer)
          +─────────────────────────────────────────────+
-         |   Ge/Si SAC2M APDs + Clocked StrongARM      |
-         |   (Event-Driven Binary Sensing, ~100 aJ)    |
-         +──────────────────────┬──────────────────────+
-                                │
-                                ▼
-         +─────────────────────────────────────────────+
-         |   12-Stage Pipelined CRT Adder Tree (80 ps) |
-         |   - 256-Entry ROM Precomputed Scaling LUTs  |
-         |   - Cycle-Exact Garner Mixed-Radix Engine   |
+         |   65nm CMOS Base Stratum Detection & Logic  |
+         |   - StrongARM Regenerative Latches (3.5 ps) |
+         |   - 1:32 Time-Interleaved Deserializers     |
+         |   - 32-Lane SIMD Wallace-Kogge Logic        |
+         |   - 12-Stage Pipelined CRT Adder Tree       |
+         |   - 160-Bit Binary Carry-Save Accumulator   |
          +──────────────────────┬──────────────────────+
                                 │
                                 ▼
@@ -60,11 +59,12 @@ This directory houses the **verified 5-tier multi-physics co-simulation framewor
 
 | Tier | Simulation Engine | Physical / Architectural Scope | Deliverables & Verification |
 |---|---|---|---|
-| **Tier 1** | **3D MEEP (FDTD) & MPB** | 3D Maxwell curl solver, 4-stage 16-Tree Fermat optical core (1064 nm), non-volatile $\text{Sb}_2\text{S}_3$ directional couplers, MMI crossings, $\text{LiTaO}_3$ Pockels routers. | Touchstone `.s4p` S-matrices, $Q_{\text{opt}}(x,y,z)$ heat map, $\text{IL} = 1.612\text{ dB} \le 2.0\text{ dB}$, $\text{ER} \ge 25.0\text{ dB}$. |
-| **Tier 2** | **Elmer FEM & 1D BDF** | 3D transient heat diffusion, 6-layer packaging strata, $250\ \mu\text{m}\ \text{SiO}_2$ buffer, thermal transient damping, Foster RC extraction. | $\tau_{\text{diff}} = 69.06\text{ ms}$, $T_{\text{peak}} = 25.08\text{ }^\circ\text{C} \le 65.0\text{ }^\circ\text{C}$, 5-pole state-space ROM ($R^2 = 1.000$). |
-| **Tier 3** | **Xyce SPICE & Bessel** | $\text{Ge/Si SAC}^2\text{M}$ APD receiver ($M=7$), clocked StrongARM latch ($3.5\text{ ps}$ regen), 3rd-order 105 GHz Bessel filter, PRBS-7 eye diagrams. | $\text{BER} = 1.15 \times 10^{-30} \le 10^{-18}$, practical link margin $\ge +3.45\text{ dB}$, eye opening $= 73.9\%$. |
-| **Tier 4** | **Digital CMOS RTL** | 100 GHz wave-pipelined RNS encoder, 12-stage CRT adder tree ($80\text{ ps}$ latency), JIR fault monitor in Verilog (`iverilog` + `cocotb`). | Cycle-accurate bit-exact reconstruction ($0$ clock slips, $0$ errors across 1000 randomized vectors). |
+| **Tier 1** | **3D MEEP (FDTD) & MPB** | 3D Maxwell curl solver, dual-layer $\text{Si}_3\text{N}_4\text{-on-Si}$ optical stack, 4-stage 16-Tree Fermat core ($1064\text{ nm}$), non-volatile $\text{Sb}_2\text{S}_3$ directional couplers, Talbot MMI crossings, adiabatic $\text{Si}_3\text{N}_4\text{-to-Si}$ tapers, $\text{LiTaO}_3$ Pockels modulators. | Touchstone `.s4p` S-matrices, $Q_{\text{opt}}(x,y,z)$ heat map, $\text{IL} = 1.636\text{ dB} \le 2.0\text{ dB}$, $\text{ER} \ge 25.0\text{ dB}$, zero TPA saturation. |
+| **Tier 2** | **Elmer FEM & 1D BDF** | 3D transient heat diffusion, 6-layer packaging strata, $250\ \mu\text{m}\ \text{SiO}_2$ thermal buffer, vertical Cu TDV pillars ($8\ \mu\text{m}$ diam, $10,000\ \text{mm}^{-2}$), thermal transient damping, Foster RC extraction. | $\tau_{\text{diff}} = 69.06\text{ ms}$, $T_{\text{peak}} = 25.08\text{ }^\circ\text{C} \le 65.0\text{ }^\circ\text{C}$, 5-pole state-space ROM ($R^2 = 1.000$). |
+| **Tier 3** | **Xyce SPICE & Bessel** | Vertical Cu TDVs ($R < 0.05\ \Omega$, $C < 4.2\ \text{fF}$), $\text{Ge/Si SAC}^2\text{M}$ APD receiver ($M=7$), clocked 65nm StrongARM latch ($3.5\text{ ps}$ regen), 3rd-order 105 GHz Bessel filter, PRBS-7 eye diagrams. | $\text{BER} = 1.15 \times 10^{-30} \le 10^{-18}$, practical link margin $\ge +3.45\text{ dB}$, eye opening $= 73.9\%$. |
+| **Tier 4** | **Digital CMOS RTL** | 65nm CMOS base stratum logic: 100 GHz wave-pipelined RNS encoder, 1:32 deserializer, 32-lane SIMD Wallace-Kogge unit, 12-stage CRT adder tree ($80\text{ ps}$ latency), 160-bit accumulator, JIR fault monitor in Verilog (`iverilog` + `cocotb`). | Cycle-accurate bit-exact reconstruction ($0$ clock slips, $0$ errors across 1000 randomized vectors). |
 | **Tier 5** | **Python RNS & Z3 SMT** | 5 formal Z3 mathematical proofs, Spatial One-Hot tensor router, JIR thermal scheduler, RRNS self-healing. | 5/5 formal proofs passed, 100% single-fault recovery, **$0.00000000\%$ GEMM arithmetic deviation**. |
+
 
 ---
 

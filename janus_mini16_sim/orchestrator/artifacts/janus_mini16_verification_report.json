@@ -1,15 +1,15 @@
 {
   "project": "Project JANUS Mini 16-Tile",
-  "timestamp": "2026-09-12T19:40:19Z",
+  "timestamp": "2026-09-12T21:49:46Z",
   "overall_pass": true,
   "status": "VERIFICATION COMPLETED",
   "execution_times_seconds": {
-    "tier1": 0.02513599395751953,
-    "tier2": 1.3306825160980225,
-    "tier3": 0.04766535758972168,
-    "tier4": 2.327068328857422,
-    "tier5": 7.209812879562378,
-    "total": 10.951434135437012
+    "tier1": 0.10136628150939941,
+    "tier2": 5.083515882492065,
+    "tier3": 0.0757608413696289,
+    "tier4": 4.376965045928955,
+    "tier5": 13.35159683227539,
+    "total": 23.014973163604736
   },
   "verification_checks": [
     {
@@ -107,7 +107,7 @@
       "name": "Optical Receiver Bit Error Rate",
       "tier": "Tier 3",
       "target_spec": "BER <= 10^-18",
-      "measured_value": "6.15e-28",
+      "measured_value": "2.677e-34",
       "threshold": "<= 1.00e-18",
       "passed": true,
       "details": "Calculated with Q=9.38 error bound"
@@ -117,7 +117,7 @@
       "name": "100 GHz Eye Diagram Opening",
       "tier": "Tier 3",
       "target_spec": "Eye Opening > 0%",
-      "measured_value": "72.54",
+      "measured_value": "75.46",
       "threshold": "> 0.0%",
       "passed": true,
       "details": "Clear binary spatial discrimination at 100 GHz"

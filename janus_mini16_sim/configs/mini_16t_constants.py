@@ -39,14 +39,29 @@ def get_gds_file_path(base_dir: str = None) -> str:
     return candidates[0]
 
 LAYER_MAP: Dict[str, str] = {
-    "1": "Si_Waveguide",
-    "2": "SiO2_Cladding",
-    "3": "Sb2S3_Patch",
-    "4": "LiTaO3_Modulator",
-    "5": "Germanium_APD",
-    "6": "Metal_TDV_Copper",
+    "1": "Si_Core_Base",          # Crystalline Si (450x220nm) - APD seed & high-index coupling
+    "2": "SiO2_Cladding",         # SiO2 upper cladding & BOX isolation
+    "3": "LiTaO3_Modulator",      # Thin-film LiTaO3 electro-optic Pockels slabs
+    "4": "Sb2S3_Patch",           # Non-volatile Sb2S3 phase-change directional switches
+    "5": "Si3N4_Core_Primary",    # Low-loss Si3N4 (800x300nm) - primary routing & Talbot MMIs
+    "10": "Metal_M1_Copper",      # Cu M1 RF coplanar electrodes & micro-heaters
+    "11": "Metal_M2_Copper",      # Cu M2 global clock/power distribution mesh
+    "20": "Germanium_APD",        # SAC2M Ge epitaxial absorption mesas
+    "30": "Metal_TDV_Copper",     # Vertical Cu Through-Dielectric Vias (8 um diam, 250 um height)
+    "31": "UBM_MicroBump",        # Under-bump metallization & micro-bump pads (50 um pitch)
+    "32": "Thermal_Buffer_SiO2",  # Monolithic 250 um SiO2 thermal isolation boundary
+    "40": "CMOS_StrongARM",       # 65nm StrongARM regenerative sense latches
+    "41": "CMOS_Deserializer",    # 1:32 polyphase time-interleaved deserializers
+    "42": "CMOS_SIMD_Unit",       # 32-lane SIMD Wallace-Kogge arithmetic unit
+    "43": "CMOS_DualLUT_SRAM",    # 1.5 MB dual-LUT volatile local SRAM
+    "44": "CMOS_Central_ROM",     # 1.5 MB central non-volatile ROM macro & JIR FSM
+    "45": "CMOS_Accumulator160",  # 160-bit binary carry-save accumulator
+    "46": "CMOS_Thermal_Sensors", # JIR thermal sensing diodes & 10-bit Delta-Sigma ADCs
+    "90": "Seal_Ring_Moisture",   # 4-layer chip perimeter moisture seal ring
+    "99": "Floorplan_Keepout",    # Die perimeter & tile keep-out boundaries
 }
 POLYGON_TOLERANCE: float = 1e-9  # 1 nm tolerance for polygon simplification (m)
+
 
 # ==============================================================================
 # 2.1 UNIVERSAL PHYSICAL CONSTANTS
@@ -135,13 +150,32 @@ gst_patch_thickness: float = 15e-9  # Sb2S3 active patch thickness (m) [T1]
 P_pcm_static_hold: float = 0.0  # Non-volatile PCM static hold power (W) [T3, T5]
 
 # ==============================================================================
-# 2.5 WAVEGUIDE & PHOTONIC CELL GEOMETRY
+# 2.5 WAVEGUIDE & PHOTONIC CELL GEOMETRY (Dual-Layer Si3N4 / Crystalline Si)
 # ==============================================================================
-wg_width_si: float = 450e-9  # Silicon waveguide core width (m) [T1]
-wg_height_si: float = 220e-9  # Silicon waveguide core height (m) [T1]
+# Primary Waveguide Routing: Silicon Nitride (Si3N4) - 0.1 dB/cm, Zero TPA
+wg_width_sin: float = 800e-9  # Primary Si3N4 core width (800 nm) [T1]
+wg_height_sin: float = 300e-9  # Primary Si3N4 core height (300 nm) [T1]
+loss_sin_prop_db_cm: float = 0.10  # Si3N4 propagation loss (0.10 dB/cm) [T1]
+
+# Base Silicon Seed Layer: Crystalline Si - For SAC2M Ge APD Epitaxy
+wg_width_si: float = 450e-9  # Crystalline Si core width (450 nm) [T1]
+wg_height_si: float = 220e-9  # Crystalline Si core height (220 nm) [T1]
+loss_si_prop_db_cm: float = 1.50  # Crystalline Si propagation loss (1.50 dB/cm) [T1]
+
+# Inter-Layer Adiabatic Taper: Si3N4 to Crystalline Si (Ahead of APD Mesas)
+L_taper_sin_si: float = 15e-6  # Adiabatic inverse taper length (15 um) [T1]
+IL_taper_sin_si: float = 0.035  # Inter-layer mode transition loss (dB, < 0.05 dB) [T1]
+
+# 3D Vertical Interconnect: Copper Through-Dielectric Vias (Cu TDVs)
+diam_tdv_cu: float = 8.0e-6  # Cu TDV pillar diameter (8 um) [T2, T3]
+pitch_tdv_cu: float = 50.0e-6  # TDV micro-bump pitch (50 um) [T2, T3]
+R_via_cu: float = 0.042  # Vertical Cu TDV series resistance (ohm, < 0.05 ohm) [T3]
+C_via_cu: float = 3.8e-15  # Vertical Cu TDV parasitic capacitance (F, < 4.2 fF) [T3]
+
 L_wg_phase: float = 500e-6  # Waveguide length for phase stability (m) [T1, T2]
 L_wire_electrical: float = 200e-6  # On-chip local electrical wire length (m) [T3, T4]
 v_wire: float = 1.5e8  # Speed of light in on-chip metal (c/2) (m/s) [T3, T4]
+
 # IL_crossing: float = 0.02  # MMI waveguide crossing insertion loss (dB) [T1] # COMPUTED BY TIER 1 — do not hardcode
 # XT_crossing: float = -40.0  # MMI waveguide crossing crosstalk (dB) [T1] # COMPUTED BY TIER 1 — do not hardcode
 
