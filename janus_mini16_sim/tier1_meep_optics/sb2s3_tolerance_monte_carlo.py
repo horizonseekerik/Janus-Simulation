@@ -25,8 +25,7 @@ import numpy as np
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 try:
-    from tier1_meep_optics.sb2s3_switch_cell import Sb2S3SwitchCellMeep
-    HAS_MEEP = True
+    from tier1_meep_optics.sb2s3_switch_cell import Sb2S3SwitchCellMeep, HAS_MEEP
 except ImportError:
     HAS_MEEP = False
 
@@ -147,7 +146,7 @@ class Sb2S3MonteCarlo:
         }
 
     def run(self):
-        if not HAS_MEEP:
+        if not HAS_MEEP and self.topology != "mzi":
             raise RuntimeError("MEEP/MPB not installed on this system.")
             
         solver = Sb2S3SwitchCellMeep()

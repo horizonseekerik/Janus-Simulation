@@ -1,8 +1,8 @@
 # PROJECT JANUS MINI (16-TILE) CO-SIMULATION SIGN-OFF REPORT
 
-**Date:** 2026-09-12 19:33:35  
+**Date:** 2026-09-12 19:40:19  
 **Status:** VERIFICATION COMPLETED  
-**Total Execution Time:** 9.49 seconds  
+**Total Execution Time:** 10.95 seconds  
 
 ## 1. Executive Summary
 
@@ -21,8 +21,8 @@ The automated multi-physics co-simulation stack executes across all 5 verificati
 | 7 | Tier 2 | Max Steady-State Operating Temperature | T_steady <= 70.0 deg-C | 26.08 | <= 70.0 deg-C | PASS |
 | 8 | Tier 2 | Thermal ROM Extraction Accuracy | R^2 >= 0.999 | 0.9998 | >= 0.999 | PASS |
 | 9 | Tier 3 | APD Practical Sensitivity Margin | Margin >= +3.00 dB | 6.142 | >= +3.00 dB | PASS |
-| 10 | Tier 3 | Optical Receiver Bit Error Rate | BER <= 10^-18 | 1.647e-29 | <= 1.00e-18 | PASS |
-| 11 | Tier 3 | 100 GHz Eye Diagram Opening | Eye Opening > 0% | 73.36 | > 0.0% | PASS |
+| 10 | Tier 3 | Optical Receiver Bit Error Rate | BER <= 10^-18 | 6.15e-28 | <= 1.00e-18 | PASS |
+| 11 | Tier 3 | 100 GHz Eye Diagram Opening | Eye Opening > 0% | 72.54 | > 0.0% | PASS |
 | 12 | Tier 4 | CRT Adder Tree Digital Latency | t_CRT <= 220 ps | 80 | <= 220.0 ps | PASS |
 | 13 | Tier 4 | RTL Cycle-Accurate Verification | Errors == 0 | 0 | == 0 errors | PASS |
 | 14 | Tier 5 | Z3 SMT Formal Proofs (4 Proofs) | 4 / 4 Proved | 4 | All 4 Proved | PASS |
@@ -32,10 +32,10 @@ The automated multi-physics co-simulation stack executes across all 5 verificati
 ## 3. Tier Execution Breakdown
 
 - **TIER1**: 0.03 s
-- **TIER2**: 1.47 s
-- **TIER3**: 0.04 s
-- **TIER4**: 2.43 s
-- **TIER5**: 5.51 s
+- **TIER2**: 1.33 s
+- **TIER3**: 0.05 s
+- **TIER4**: 2.33 s
+- **TIER5**: 7.21 s
 
 ## 4. Hardware Baseline Parameters
 
