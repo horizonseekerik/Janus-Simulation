@@ -19,6 +19,7 @@ from typing import Dict
 # Relative path from constants file location (configs/ -> layout/)
 _CONFIGS_DIR: str = os.path.dirname(os.path.abspath(__file__))
 GDS_FILE_PATH: str = os.path.normpath(os.path.join("..", "layout", "janus_mini16_layout.gds")).replace("\\", "/")
+CMOS_GDS_FILE_PATH: str = os.path.normpath(os.path.join("..", "layout", "janus_mini16_cmos_base_layout.gds")).replace("\\", "/")
 
 
 def get_gds_file_path(base_dir: str = None) -> str:
@@ -37,6 +38,24 @@ def get_gds_file_path(base_dir: str = None) -> str:
         if os.path.exists(p):
             return p
     return candidates[0]
+
+
+def get_cmos_gds_file_path(base_dir: str = None) -> str:
+    """
+    Returns the resolved absolute path to the standalone 65nm CMOS base GDS layout file.
+    """
+    if base_dir is None:
+        base_dir = _CONFIGS_DIR
+    candidates = [
+        os.path.normpath(os.path.join(base_dir, "..", "layout", "janus_mini16_cmos_base_layout.gds")),
+        os.path.normpath(os.path.join(base_dir, "..", "data", "janus_mini16_cmos_base_layout.gds")),
+        os.path.normpath(os.path.join(base_dir, "..", "janus_mini16_cmos_base_layout.gds")),
+    ]
+    for p in candidates:
+        if os.path.exists(p):
+            return p
+    return candidates[0]
+
 
 LAYER_MAP: Dict[str, str] = {
     "1": "Si_Core_Base",          # Crystalline Si (450x220nm) - APD seed & high-index coupling

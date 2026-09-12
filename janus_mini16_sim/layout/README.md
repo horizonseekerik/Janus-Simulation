@@ -28,11 +28,34 @@ This directory houses the physical GDS II stream files, generator scripts, and m
     - **Layer 90/0 (`LAYER_SEAL_RING`)**: 4-Layer Moisture Seal Ring.
     - **Layer 99/0 (`LAYER_FLOORPLAN`)**: Chip Guard Ring & Tile Keep-Out Boundaries.
 
-- **`generate_mini16_gds.py`**: Automated physical layout synthesis script built on `gdsfactory` and `klayout`.
+- **`janus_mini16_cmos_base_layout.gds`**: Standalone GDS II stream file for the complete 65nm LP/GP CMOS digital base die:
+  - **Process Node**: Standard 65nm LP/GP CMOS (1P7M to 1P9M BEOL).
+  - **Die Footprint**: $3.24\text{ mm} \times 3.20\text{ mm}$ ($10.37\ \text{mm}^2$), matching the top optical die 1:1 vertically.
+  - **Mask Layers**:
+    - **Layer 1/0 (`LAYER_NW_DIFF`)**: N-Well & Active Silicon Diffusion (P/N OD).
+    - **Layer 2/0 (`LAYER_POLY_GATE`)**: 65nm drawn polysilicon gates.
+    - **Layer 6/0 (`LAYER_CONTACT`)**: Tungsten contact plugs.
+    - **Layer 11/0 (`LAYER_METAL1`)**: Metal 1 local interconnect & StrongARM sense nodes.
+    - **Layer 12/0 (`LAYER_VIA1`)**: Via 1 inter-metal plugs & Via-ROM matrix.
+    - **Layer 21/0 (`LAYER_METAL2`)**: Metal 2 intra-tile signal routing & memory banks.
+    - **Layer 31/0 (`LAYER_METAL3`)**: Metal 3 lane bus & SIMD cross-routing.
+    - **Layer 41/0 (`LAYER_METAL4`)**: Metal 4 SRAM wordline/bitline strapping.
+    - **Layer 51/0 (`LAYER_METAL5`)**: Metal 5 accumulator & CRT adder bus.
+    - **Layer 61/0 (`LAYER_METAL6_CLK`)**: Metal 6 global balanced 3.125 GHz H-Tree clock distribution.
+    - **Layer 71/0 (`LAYER_TOP_METAL_PWR`)**: Top thick metal VDD/VSS power mesh and peripheral power ring.
+    - **Layer 81/0 (`LAYER_PASSIVATION_UBM`)**: Passivation openings & Under-Bump Metallization (UBM) landing pads for vertical Cu TDVs ($8\ \mu\text{m}$ diameter, $50\ \mu\text{m}$ pitch).
+    - **Layer 82/0 (`LAYER_PAD_IO`)**: Standard peripheral wire-bond & solder bump I/O pads ($75\ \mu\text{m}$ pad size).
+    - **Layer 90/0 (`LAYER_SEAL_RING`)**: 4-layer moisture barrier chip seal ring.
+    - **Layer 99/0 (`LAYER_FLOORPLAN`)**: Die boundary & tile keep-out margins.
+  - **Top Cell**: `JANUS_MINI16_CMOS_BASE_DIE` (24 hierarchical cells, 866 shapes across 19 mask layers).
+
+- **`generate_mini16_gds.py`**: Automated physical layout synthesis script for the 3D heterogeneous stack.
+- **`generate_cmos_base_gds.py`**: Dedicated automated physical synthesis script for the 65nm LP/GP CMOS base die.
 
 ## Layout Verification & Dimensions
 - **Total Die Footprint**: 3.24 mm x 3.20 mm (10.37 mm² monolithic active die)
-- **Top Cell**: `JANUS_MINI16_TOP_CORE` (36 hierarchically instantiated subcells)
+- **3D Top Cell**: `JANUS_MINI16_TOP_CORE` (Complete 3D heterogeneous stack)
+- **CMOS Top Cell**: `JANUS_MINI16_CMOS_BASE_DIE` (Standalone 65nm CMOS digital base die)
 - **Tile Architecture**: 16 Fermat residue tiles with 4-stage binary switch trees (240 $\text{Sb}_2\text{S}_3$ switches/multiplier)
 - **Optical I/O**: Dual 17-channel standard Fiber V-Groove Array (127 µm pitch)
 - **Vertical Interconnect**: Cu TDVs linking APD anodes to CMOS StrongARM regenerative latches ($R_{\text{via}} < 0.05\ \Omega$, $C_{\text{via}} < 4.2\ \text{fF}$)
@@ -40,4 +63,6 @@ This directory houses the physical GDS II stream files, generator scripts, and m
 ## Relative Path in Registry
 Referenced from `janus_mini16_sim/configs/mini_16t_constants.py` via:
 `../layout/janus_mini16_layout.gds`
+`../layout/janus_mini16_cmos_base_layout.gds`
+
 

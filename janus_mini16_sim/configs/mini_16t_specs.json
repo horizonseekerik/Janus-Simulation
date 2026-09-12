@@ -1,5 +1,6 @@
 {
   "GDS_FILE_PATH": "../layout/janus_mini16_layout.gds",
+  "CMOS_GDS_FILE_PATH": "../layout/janus_mini16_cmos_base_layout.gds",
   "LAYER_MAP": {
     "1": "Si_Core_Base",
     "2": "SiO2_Cladding",
