@@ -16,7 +16,28 @@ from typing import Dict
 # ==============================================================================
 # 2.0 TIER 0: GDS II LAYOUT PRE-PROCESSOR & PHYSICAL GEOMETRY
 # ==============================================================================
-GDS_FILE_PATH: str = r"c:\Users\hp\Desktop\Janus Update\janus_mini16_layout.gds"
+# Relative path from constants file location (configs/ -> layout/)
+_CONFIGS_DIR: str = os.path.dirname(os.path.abspath(__file__))
+GDS_FILE_PATH: str = os.path.normpath(os.path.join("..", "layout", "janus_mini16_layout.gds")).replace("\\", "/")
+
+
+def get_gds_file_path(base_dir: str = None) -> str:
+    """
+    Returns the resolved absolute path to the GDS layout file.
+    Checks layout/, data/, and parent directories relative to configs directory.
+    """
+    if base_dir is None:
+        base_dir = _CONFIGS_DIR
+    candidates = [
+        os.path.normpath(os.path.join(base_dir, "..", "layout", "janus_mini16_layout.gds")),
+        os.path.normpath(os.path.join(base_dir, "..", "data", "janus_mini16_layout.gds")),
+        os.path.normpath(os.path.join(base_dir, "..", "janus_mini16_layout.gds")),
+    ]
+    for p in candidates:
+        if os.path.exists(p):
+            return p
+    return candidates[0]
+
 LAYER_MAP: Dict[str, str] = {
     "1": "Si_Waveguide",
     "2": "SiO2_Cladding",
@@ -460,7 +481,8 @@ def export_specs_json(output_path: str = None) -> str:
             "Any",
             "export_specs_json",
             "get_k_sb2s3",
-        ]:
+            "get_gds_file_path",
+        ] and not callable(v):
             registry[k] = v
 
     with open(output_path, "w", encoding="utf-8") as f:

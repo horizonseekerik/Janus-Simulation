@@ -1,5 +1,5 @@
 {
-  "GDS_FILE_PATH": "c:\\Users\\hp\\Desktop\\Janus Update\\janus_mini16_layout.gds",
+  "GDS_FILE_PATH": "../layout/janus_mini16_layout.gds",
   "LAYER_MAP": {
     "1": "Si_Waveguide",
     "2": "SiO2_Cladding",
