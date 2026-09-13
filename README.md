@@ -1,7 +1,7 @@
 # Project JANUS: Spatial Optical RNS Photonic AI Computing Architecture
 
 [![Live Platform](https://img.shields.io/badge/Live%20Platform-Vercel%20Deployed-00f2fe.svg)](https://janus-photonic-hardware.vercel.app/)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22210334.svg)](https://doi.org/10.5281/zenodo.22210334)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22733656.svg)](https://doi.org/10.5281/zenodo.22733656)
 [![Architecture Treatise](https://img.shields.io/badge/Architecture%20Treatise-39%20Pages%20(IEEEtran)-blue.svg)](./JANUS_IEEE_Manuscript.pdf)
 [![Patent Pending](https://img.shields.io/badge/Indian%20Patent-App%20202611052791-gold.svg)](#-patent--intellectual-property)
 [![TRL Readiness](https://img.shields.io/badge/TRL-4.0%20(Co--Sim%20Validated)-green.svg)](#-master-hardware-scaling-roadmap-18-models)
@@ -544,7 +544,7 @@ To cite Project JANUS in academic publications:
   author={Horizon Seeker IK and Project JANUS Contributors},
   journal={IEEE Transactions on Emerging Topics in Computing (Preprint)},
   year={2026},
-  doi={10.5281/zenodo.22210334},
+  doi={10.5281/zenodo.22733656},
   url={https://janus-photonic-hardware.vercel.app/}
 }
 ```
