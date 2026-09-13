@@ -337,13 +337,13 @@ All simulation parameters defined in this section are **immutable constants** sh
 | `N_mmi_stages` | N_MMI | 13 | stages | T1 | Cascaded 1:2 MMI splitter count (log2(8192)) |
 | `L_split_per_stage` | L_sp | 3.0103 | dB | T1 | Ideal per-stage splitting loss (10*log10(2)) |
 | `L_split_ideal` | L_sp,tot | 39.13 | dB | T1 | Total ideal passive splitting loss (13 x 3.0103) |
-| `L_mmi_excess_per_stage` | L_MMI | 0.30 | dB/stage | T1 | MMI excess insertion loss per stage |
-| `L_mmi_excess_total` | L_MMI,tot | 3.90 | dB | T1 | Total MMI excess loss (13 x 0.30) |
+| `L_mmi_excess_per_stage` | L_MMI | 0.140 | dB/stage | T1 | Optimized 1:2 MMI excess loss (was 0.290 dB baseline) |
+| `L_mmi_excess_total` | L_MMI,tot | 1.82 | dB | T1 | Total 13-stage MMI excess loss (13 x 0.140 dB, +1.95 dB margin gain) |
 | `L_tree_per_stage` | L_tree | 0.40 | dB/stage | T1 | 16-Tree Fermat Core routing loss per stage |
 | `L_tree_total` | L_tree,tot | 1.61 | dB | T1 | Total 4-stage 16-Tree loss (4 x 0.40 dB) |
 | `L_propagation_coupling` | L_prop | 1.50 | dB | T1 | Waveguide propagation & interlayer coupling |
-| `L_excess_total` | L_ex | 7.01 | dB | T1 | Total excess path loss (MMI + 16-Tree + prop) |
-| `L_distribution_total` | L_tot | 46.14 | dB | T1, T3 | Total end-to-end distribution loss (ideal + excess) |
+| `L_excess_total` | L_ex | 4.93 | dB | T1 | Total excess path loss (MMI 1.82 + 16-Tree 1.61 + prop 1.50) |
+| `L_distribution_total` | L_tot | 44.06 | dB | T1, T3 | Total end-to-end distribution loss (ideal 39.13 + excess 4.93) |
 | `IL_switch_cell` | IL_sw | 0.10 | dB/cell | T1 | Sb2S3 switch cell insertion loss (a-Sb2S3 state) |
 | `ER_pcm_switch` | ER | 25.0 | dB | T1 | PCM switch extinction ratio (minimum) |
 

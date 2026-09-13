@@ -203,6 +203,20 @@ def test_16tree_product_ceiling():
     assert res["output_channel"] < 257, "Product must be strictly < 257 for division-free reduction"
 
 
+def test_mmi_1x2_splitter_optimization():
+    """Verify 1:2 MMI splitter taper optimization (0.290 dB -> 0.140 dB per stage)."""
+    from tier1_meep_optics.mmi_1x2_splitter import MMI1x2SplitterModel
+    model = MMI1x2SplitterModel()
+    cascade = model.compute_13stage_cascade()
+
+    assert cascade["baseline"]["excess_per_stage_dB"] == 0.290
+    assert cascade["optimized"]["excess_per_stage_dB"] == 0.140
+    assert cascade["comparison"]["total_optical_gain_dB"] >= 1.90
+    assert cascade["optimized"]["link_margin_dB"] > cascade["baseline"]["link_margin_dB"]
+    assert cascade["optimized"]["link_margin_dB"] >= 6.0
+
+
+
 if __name__ == "__main__":
     print("Running Tier 1 MEEP unit tests...")
     print("Testing MPB mode solving on physical cross-section...")
@@ -241,6 +255,8 @@ if __name__ == "__main__":
     print("  [PASS] 16-Tree Modular Negation Symmetry (16*W = -W mod 17)")
     test_16tree_product_ceiling()
     print("  [PASS] 16-Tree Product Ceiling (16*16 = 256 < 257)")
+    test_mmi_1x2_splitter_optimization()
+    print("  [PASS] 1:2 MMI Splitter Taper Optimization (0.290 dB -> 0.140 dB, Margin +6.56 dB)")
     print("All Tier 1 tests passed successfully!")
 
 

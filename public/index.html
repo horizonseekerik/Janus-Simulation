@@ -2376,8 +2376,8 @@
             <div class="kpi-lbl">Link Budget Target BER</div>
           </div>
           <div class="kpi-card">
-            <div class="kpi-val" style="color:var(--accent-cyan);">+3.02 to +9.03 dB</div>
-            <div class="kpi-lbl">Optical Link Margin</div>
+            <div class="kpi-val" style="color:var(--accent-cyan);">+6.56 to +8.41 dB</div>
+            <div class="kpi-lbl">Optical Link Margin (Optimized MMI)</div>
           </div>
         </div>
       </div>
@@ -5386,6 +5386,20 @@
             </p>
           </div>
 
+          <!-- 4B. 1:2 MMI POWER SPLITTER TAPER OPTIMIZATION -->
+          <div
+            style="background:var(--card-sub-bg); border:1px solid var(--card-border); border-radius:10px; padding:1.25rem;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+              <span
+                style="font-size:0.75rem; font-weight:800; color:var(--accent-green); text-transform:uppercase;">Optics Optimization</span>
+              <span style="font-size:0.75rem; color:var(--accent-cyan); font-family:monospace;">IL = 0.140 dB | +1.95 dB Margin Gain</span>
+            </div>
+            <h4 style="font-size:1.02rem; color:var(--text-main); margin-bottom:0.4rem;">1:2 MMI Power Splitter Taper Optimization</h4>
+            <p style="font-size:0.84rem; color:var(--text-muted); line-height:1.55; margin:0;">
+              Adiabatic taper extension (<i>L</i><sub>taper</sub>: 4.5 &mu;m &rarr; 7.0 &mu;m, &theta; = 1.84&deg;) and aperture widening (<i>w</i><sub>tap</sub>: 1.15 &mu;m &rarr; 1.25 &mu;m) cut per-stage excess loss from 0.290 dB down to <strong>0.140 dB</strong> (-51.7%). Across the 13-stage cascaded laser distribution tree, this delivers a <strong>+1.95 dB optical power margin gain</strong> (+56.7% photon flux at every APD detector).
+            </p>
+          </div>
+
           <!-- 5. RECEIVERLESS APD -->
           <div
             style="background:var(--card-sub-bg); border:1px solid var(--card-border); border-radius:10px; padding:1.25rem;">
@@ -5846,6 +5860,11 @@
                     "name": "waveguide_crossing.py",
                     "path": "janus_mini16_sim/tier1_meep_optics/waveguide_crossing.py",
                     "desc": "Talbot Self-Imaging MMI Waveguide Crossing (0.095 dB IL, -52.82 dB XT)"
+                },
+                {
+                    "name": "mmi_1x2_splitter.py",
+                    "path": "janus_mini16_sim/tier1_meep_optics/mmi_1x2_splitter.py",
+                    "desc": "1:2 MMI Splitter Taper Optimization (0.140 dB IL, +1.95 dB Net Link Margin Gain)"
                 },
                 {
                     "name": "litao3_pockels_router.py",
