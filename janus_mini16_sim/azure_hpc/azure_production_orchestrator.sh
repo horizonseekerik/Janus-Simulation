@@ -9,17 +9,13 @@ set -euo pipefail
 
 RESOURCE_GROUP="janus-hpc-rg"
 LOCATION="eastus"
-VM_NAME="janus-hpc-master"
-VM_SIZE="Standard_B4ms" # 4 vCPUs, 16 GB RAM (Burstable B-series, 0 restrictions in eastus, ~$0.166/hr)
-STORAGE_ACCOUNT="janushpc$(date +%s | tail -c 8)"
 CONTAINER_NAME="results"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 
 echo "========================================================================"
 echo "  PROJECT JANUS: AZURE HPC 1,000,000-RUN PRODUCTION CAMPAIGN"
 echo "  Target Budget  : < \$10.00 (from \$200 credit)"
-echo "  VM Type        : ${VM_SIZE} (4 vCPUs, 16 GB RAM)"
-echo "  Region         : ${LOCATION}"
+echo "  Strategy       : Auto-fallback across high-speed SKUs & regions"
 echo "  Timestamp      : ${TIMESTAMP}"
 echo "========================================================================"
 
@@ -27,14 +23,22 @@ echo "========================================================================"
 echo "[*] Step 1: Creating Azure Resource Group..."
 az group create --name "${RESOURCE_GROUP}" --location "${LOCATION}" --output table
 
-# 2. Create Storage Account for Artifacts & Figures
-echo "[*] Step 2: Creating Azure Storage Account for results..."
-az storage account create \
-    --name "${STORAGE_ACCOUNT}" \
-    --resource-group "${RESOURCE_GROUP}" \
-    --location "${LOCATION}" \
-    --sku Standard_LRS \
-    --output table
+# 2. Re-use or Create Storage Account for Artifacts & Figures
+echo "[*] Step 2: Preparing Azure Storage Account for results..."
+EXISTING_STORAGE=$(az storage account list --resource-group "${RESOURCE_GROUP}" --query "[0].name" --output tsv 2>/dev/null || true)
+if [ -n "${EXISTING_STORAGE}" ] && [ "${EXISTING_STORAGE}" != "None" ]; then
+    STORAGE_ACCOUNT="${EXISTING_STORAGE}"
+    echo "[*] Reusing existing Storage Account: ${STORAGE_ACCOUNT}"
+else
+    STORAGE_ACCOUNT="janushpc$(date +%s | tail -c 8)"
+    echo "[*] Creating new Storage Account: ${STORAGE_ACCOUNT}..."
+    az storage account create \
+        --name "${STORAGE_ACCOUNT}" \
+        --resource-group "${RESOURCE_GROUP}" \
+        --location "${LOCATION}" \
+        --sku Standard_LRS \
+        --output table
+fi
 
 STORAGE_KEY=$(az storage account keys list --resource-group "${RESOURCE_GROUP}" --account-name "${STORAGE_ACCOUNT}" --query "[0].value" --output tsv)
 az storage container create --name "${CONTAINER_NAME}" --account-name "${STORAGE_ACCOUNT}" --account-key "${STORAGE_KEY}" --output table
@@ -88,20 +92,64 @@ echo "[*] All simulations finished and uploaded to Azure Storage! Shutting down 
 sudo shutdown -h now
 EOF
 
-# 4. Launch Azure VM (Standard on-demand 4-vCPU)
-echo "[*] Step 3: Launching Azure VM (${VM_SIZE})..."
-az vm create \
-    --resource-group "${RESOURCE_GROUP}" \
-    --name "${VM_NAME}" \
-    --image Ubuntu2204 \
-    --size "${VM_SIZE}" \
-    --admin-username azureuser \
-    --generate-ssh-keys \
-    --custom-data /tmp/azure_janus_startup.sh \
-    --output table
+# 4. Launch Azure VM with intelligent multi-SKU and multi-region fallback
+echo "[*] Step 3: Launching Azure VM with automatic SKU & region fallback..."
+
+CANDIDATE_SIZES=(
+    "Standard_F4s_v2"
+    "Standard_D4s_v4"
+    "Standard_D4s_v3"
+    "Standard_B4as_v2"
+    "Standard_D4as_v5"
+    "Standard_B2ms"
+    "Standard_F2s_v2"
+)
+
+REGIONS=("eastus" "eastus2" "centralus")
+
+VM_LAUNCHED=false
+FINAL_VM_NAME=""
+FINAL_REGION=""
+FINAL_SIZE=""
+
+for REG in "${REGIONS[@]}"; do
+    for SIZE in "${CANDIDATE_SIZES[@]}"; do
+        CURRENT_VM_NAME="janus-hpc-$(echo "${SIZE}" | tr '_' '-' | tr '[:upper:]' '[:lower:]')"
+        echo "[*] Attempting deployment: ${SIZE} in ${REG} (VM: ${CURRENT_VM_NAME})..."
+        
+        if az vm create \
+            --resource-group "${RESOURCE_GROUP}" \
+            --name "${CURRENT_VM_NAME}" \
+            --image Ubuntu2204 \
+            --size "${SIZE}" \
+            --location "${REG}" \
+            --admin-username azureuser \
+            --generate-ssh-keys \
+            --custom-data /tmp/azure_janus_startup.sh \
+            --output table; then
+            
+            echo "[+] SUCCESS: VM '${CURRENT_VM_NAME}' (${SIZE}) launched in ${REG}!"
+            VM_LAUNCHED=true
+            FINAL_VM_NAME="${CURRENT_VM_NAME}"
+            FINAL_REGION="${REG}"
+            FINAL_SIZE="${SIZE}"
+            break 2
+        else
+            echo "[-] SKU ${SIZE} unavailable in ${REG}. Trying next candidate..."
+            az vm delete --resource-group "${RESOURCE_GROUP}" --name "${CURRENT_VM_NAME}" --yes --no-wait >/dev/null 2>&1 || true
+        fi
+    done
+done
+
+if [ "${VM_LAUNCHED}" = false ]; then
+    echo "[!] ERROR: All candidate VM sizes and regions exhausted. Please check subscription quotas."
+    exit 1
+fi
 
 echo "========================================================================"
-echo "  [LAUNCHED] Azure HPC Spot VM is running!"
-echo "  Monitor with: az vm get-instance-view --name ${VM_NAME} --resource-group ${RESOURCE_GROUP} --output table"
+echo "  [LAUNCHED] Azure HPC VM (${FINAL_SIZE} in ${FINAL_REGION}) is running!"
+echo "  VM Name        : ${FINAL_VM_NAME}"
+echo "  Storage URL    : https://${STORAGE_ACCOUNT}.blob.core.windows.net/${CONTAINER_NAME}/"
+echo "  Monitor with   : az vm get-instance-view --name ${FINAL_VM_NAME} --resource-group ${RESOURCE_GROUP} --output table"
 echo "  To delete when done: az group delete --name ${RESOURCE_GROUP} --yes --no-wait"
 echo "========================================================================"
