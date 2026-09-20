@@ -1,4 +1,30 @@
+# ==============================================================================
+# PROJECT JANUS: VERCEL IGNORE CONFIGURATION
+# Excludes heavy non-web assets, 3D renders, and simulation outputs from deployment
+# ==============================================================================
+
+# 3D Modeling & Animation Render Scratch (617+ MB)
 Janus Interactive Visulaization/
+
+# Heavy LaTeX source and build directories
+simulation_paper_latex/
+cmos_paper_latex/
+paper_latex/
+
+# Temporary and scratch archives
+CMOS RECONSTRUCTION/
+Simulation Changes for 100%/
+public/Simulation Changes for 100%/
+scratch_archive/
+sim_build/
+.pytest_cache/
+__pycache__/
+*.blend
+*.blend1
+
+# Simulation output artifacts and heavy meshes
+janus_mini16_sim/output/
+janus_mini16_sim/orchestrator/artifacts/
 *.vtu
 *.geo
 *.msh
@@ -7,5 +33,10 @@ Janus Interactive Visulaization/
 *.h5
 *.npy
 *.s4p
+
+# Local desktop runners & virtualenvs
 start_dashboard.vbs
 run_dashboard.py
+.venv/
+venv/
+env/

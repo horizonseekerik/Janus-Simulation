@@ -37,10 +37,16 @@ results.xml
 *.fls
 *.fdb_latexmk
 
-# 3D Modeling & Animation Render Scratch
+# 3D Modeling & Heavy Animation Render Workspace (617+ MB)
+Janus Interactive Visulaization/
+*.blend
 *.blend1
-Janus Interactive Visulaization/renders/temp_cinematic_frames/
-Janus Interactive Visulaization/renders/test_seq/
+
+# Temporary Scratch Directories & Archives
+scratch_archive/
+CMOS RECONSTRUCTION/
+Simulation Changes for 100%/
+public/Simulation Changes for 100%/
 
 # Operating System & Editor Metadata
 .DS_Store
@@ -57,8 +63,12 @@ janus_mini16_sim/output/
 janus_mini16_sim/orchestrator/artifacts/
 *.vtu
 *.geo
+*.msh
 *.dat
 *.names
+*.h5
+*.npy
+*.s4p
 
 # Local execution scripts
 start_dashboard.vbs
