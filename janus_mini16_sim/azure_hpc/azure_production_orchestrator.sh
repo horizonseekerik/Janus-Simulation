@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ==============================================================================
 # PROJECT JANUS: AZURE PRODUCTION CLOUD HPC ORCHESTRATOR
-# Budget: ~$0.50 – $3.00 (from your $200 Azure Credit)
+# Budget: < $10.00 (from your $200 Azure Credit)
 # Workload: 1,000,000 Monte Carlo Runs + 1,000,000 SPICE Cycles + 5M Elmer FEM
 # Generates: 19 High-Resolution Publication Figures & OFC 3-Page Dashboard
 # ==============================================================================
@@ -10,14 +10,14 @@ set -euo pipefail
 RESOURCE_GROUP="janus-hpc-rg"
 LOCATION="eastus"
 VM_NAME="janus-hpc-master"
-VM_SIZE="Standard_D4s_v5" # 4 vCPUs, 16 GB RAM (Matches exact 4-vCPU quota, ~$0.19/hr)
+VM_SIZE="Standard_B4ms" # 4 vCPUs, 16 GB RAM (Burstable B-series, 0 restrictions in eastus, ~$0.166/hr)
 STORAGE_ACCOUNT="janushpc$(date +%s | tail -c 8)"
 CONTAINER_NAME="results"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 
 echo "========================================================================"
 echo "  PROJECT JANUS: AZURE HPC 1,000,000-RUN PRODUCTION CAMPAIGN"
-echo "  Target Budget  : < \$0.25 (from \$200 credit)"
+echo "  Target Budget  : < \$10.00 (from \$200 credit)"
 echo "  VM Type        : ${VM_SIZE} (4 vCPUs, 16 GB RAM)"
 echo "  Region         : ${LOCATION}"
 echo "  Timestamp      : ${TIMESTAMP}"
@@ -62,6 +62,8 @@ python3 -m venv venv
 source venv/bin/activate
 pip install --upgrade pip
 pip install numpy scipy matplotlib sympy pytest
+
+mkdir -p /opt/janus/output/cloud_figures /opt/janus/janus_mini16_sim/output /opt/janus/janus_mini16_sim/orchestrator/artifacts
 
 echo "[*] Step 1: Running 1,000,000-Sample Monte Carlo Tolerance with 7 Figures..."
 python3 janus_mini16_sim/tier1_meep_optics/monte_carlo_tolerance.py --samples 1000000 --batch-size 250000 --export-graphs --graph-dir /opt/janus/output/cloud_figures > /opt/janus/output/mc_1m.log 2>&1
