@@ -1,0 +1,26 @@
+# ==============================================================================
+# PROJECT JANUS: COMPREHENSIVE LOCAL / HPC SIMULATION & EDA DEPENDENCIES
+# Install for local simulation, EDA testing, and GDS physical layout generation:
+#     pip install -r requirements-dev.txt
+# ==============================================================================
+
+# Core Multi-Physics Simulation & Scientific Computing
+numpy>=1.26.0
+scipy>=1.11.0
+matplotlib>=3.8.0
+h5py>=3.10.0
+z3-solver>=4.12.0
+
+# GDS II Physical Mask Layout & Silicon Synthesis
+gdsfactory>=8.0.0
+gdstk>=0.9.50
+
+# RTL Digital Co-Simulation & Verification
+cocotb>=1.8.0
+
+# Automated Test Harness
+pytest>=7.4.0
+
+# Production WSGI / Web Deployment (Local Testing)
+flask>=3.0.0
+gunicorn>=21.2.0

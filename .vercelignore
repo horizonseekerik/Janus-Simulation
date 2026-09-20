@@ -34,9 +34,14 @@ janus_mini16_sim/orchestrator/artifacts/
 *.npy
 *.s4p
 
-# Local desktop runners & virtualenvs
+# Local desktop runners, dev dependencies & virtualenvs
 start_dashboard.vbs
 run_dashboard.py
+requirements-dev.txt
 .venv/
 venv/
 env/
+
+# Exclude heavy GDS and LYP files from backend function
+janus_mini16_sim/layout/*.gds
+janus_mini16_sim/layout/*.lyp

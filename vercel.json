@@ -1,7 +1,7 @@
 {
   "functions": {
     "api/index.py": {
-      "includeFiles": "{janus_mini16_sim/**,JANUS_ASYMMETRIC_16TREE_ARCHITECTURE.md,README.md,paper_latex/**,public/documentation_reports/**}"
+      "includeFiles": "{janus_mini16_sim/**/*.py,janus_mini16_sim/configs/*.json,janus_mini16_sim/orchestrator/artifacts/*.json}"
     }
   },
   "headers": [
