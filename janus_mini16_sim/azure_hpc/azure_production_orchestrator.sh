@@ -15,7 +15,8 @@ TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 echo "========================================================================"
 echo "  PROJECT JANUS: AZURE HPC 1,000,000-RUN PRODUCTION CAMPAIGN"
 echo "  Target Budget  : < \$10.00 (from \$200 credit)"
-echo "  Strategy       : Auto-fallback across high-speed SKUs & regions"
+echo "  Primary Region : Central India (Pune) / South India (Chennai)"
+echo "  Strategy       : Auto-fallback across India & global high-speed clusters"
 echo "  Timestamp      : ${TIMESTAMP}"
 echo "========================================================================"
 
@@ -96,16 +97,19 @@ EOF
 echo "[*] Step 3: Launching Azure VM with automatic SKU & region fallback..."
 
 CANDIDATE_SIZES=(
+    "Standard_D4s_v5"
     "Standard_F4s_v2"
     "Standard_D4s_v4"
     "Standard_D4s_v3"
+    "Standard_B4ms"
     "Standard_B4as_v2"
     "Standard_D4as_v5"
     "Standard_B2ms"
+    "Standard_D2s_v5"
     "Standard_F2s_v2"
 )
 
-REGIONS=("eastus" "eastus2" "centralus")
+REGIONS=("centralindia" "southindia" "eastus" "eastus2" "centralus")
 
 VM_LAUNCHED=false
 FINAL_VM_NAME=""
