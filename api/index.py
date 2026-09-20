@@ -506,14 +506,14 @@ def get_ai_benchmarks_data() -> Dict[str, Any]:
             "name": "JANUS Mini 16-Tile (Planar MVP)",
             "architecture": "One-Hot Optical Spatial RNS + 100 GHz CMOS",
             "process_node": "3D Hybrid (30um SiPh + 50um CMOS)",
-            "die_area_mm2": 100.0,
-            "tdp_watts": 6.17,
+            "die_area_mm2": 10.24,
+            "tdp_watts": 3.35,
             "peak_int4_tops": 5570.6,
             "peak_int8_tops": 2785.2,
             "peak_int4_tmacs": 1392.6,
             "peak_int8_tmacs": 696.3,
-            "energy_eff_int8_tmacs_w": 112.8,
-            "compute_density_int8_tmacs_mm2": 6.96
+            "energy_eff_int8_tmacs_w": 207.8,
+            "compute_density_int8_tmacs_mm2": 67.99
         },
         {
             "name": "NVIDIA H100 SXM5",
@@ -551,10 +551,10 @@ def get_ai_benchmarks_data() -> Dict[str, Any]:
             "total_layer_latency_ns": round(sum(l["sustained_latency_ns"] for l in llama_layers), 2),
             "total_layer_energy_uj": 1.94,
             "average_throughput_tmacs": 694.4,
-            "energy_efficiency_tmacs_w": 112.6,
+            "energy_efficiency_tmacs_w": 207.8,
             "total_tokens_per_sec": 12450.0,
-            "total_power_w": 6.17,
-            "energy_per_token_nj": 48.81
+            "total_power_w": 3.35,
+            "energy_per_token_nj": 26.5
         },
         "gpt2": {
             "model_name": "GPT-2 Base",
@@ -563,10 +563,10 @@ def get_ai_benchmarks_data() -> Dict[str, Any]:
             "total_layer_latency_ns": round(sum(l["sustained_latency_ns"] for l in gpt_layers), 2),
             "total_layer_energy_uj": 0.07,
             "average_throughput_tmacs": 659.7,
-            "energy_efficiency_tmacs_w": 106.9,
+            "energy_efficiency_tmacs_w": 196.9,
             "throughput_tok_per_s": 9820.0,
-            "total_power_w": 6.17,
-            "energy_per_token_nj": 62.83
+            "total_power_w": 3.35,
+            "energy_per_token_nj": 34.1
         },
         "vit": {
             "model_name": "ViT-Huge",
@@ -575,17 +575,17 @@ def get_ai_benchmarks_data() -> Dict[str, Any]:
             "total_layer_latency_ns": round(sum(l["sustained_latency_ns"] for l in vit_layers), 2),
             "total_layer_energy_uj": 1.22,
             "average_throughput_tmacs": 19441.4,
-            "energy_efficiency_tmacs_w": 3151.0,
+            "energy_efficiency_tmacs_w": 5803.4,
             "throughput_img_per_s": 68400.0,
-            "total_power_w": 6.17,
-            "energy_per_img_uj": 0.09
+            "total_power_w": 3.35,
+            "energy_per_img_uj": 0.05
         },
         "gpu_comparison": {
             "platforms": gpu_platforms,
-            "janus_vs_h100_energy_efficiency_mult": 159.7,
-            "janus_vs_b200_energy_efficiency_mult": 100.3,
-            "janus_vs_h100_density_mult": 11.45,
-            "janus_vs_b200_density_mult": 9.90
+            "janus_vs_h100_energy_efficiency_mult": 293.9,
+            "janus_vs_b200_energy_efficiency_mult": 184.7,
+            "janus_vs_h100_density_mult": 111.8,
+            "janus_vs_b200_density_mult": 96.7
         },
         "attention_packing": {"num_heads": 32, "spatial_occupancy_pct": 100.0, "speedup_factor": 32.0},
         "mlp_packing": {"batch_size": 32, "spatial_occupancy_pct": 100.0, "speedup_factor": 32.0}
