@@ -1,0 +1,49 @@
+===========================================================================
+JANUS ASYMMETRIC 16-TREE FERMAT CORE PHYSICAL SIMULATION
+===========================================================================
+Active Inputs: 16 physical waveguides (X in [1..16], including WG16)
+Zero-Skipped: Input X = 0 (Gated laser, dark channel)
+Number of Stages per Tree: 4 (Binary Demux)
+Switches per Tree: 15
+Total Switches in Core: 240 (16 trees x 15 switches = 240)
+Optical Propagation Delay: 0.70 ps
+Maximum Single Product: 16 * 16 = 256 (strictly < 257 for Z_257)
+---------------------------------------------------------------------------
+
+[TEST 1] Exhaustive Exact Integer Multiplication (X * W for all X, W in [0, 16]):
+  Accuracy: 289 / 289 (100.0%)
+  Mean Optical Insertion Loss: 1.636 dB (Max: 1.636 dB)
+  Worst-Case Optical Signal-to-Crosstalk Ratio (SCR): 18.96 dB
+
+[TEST 2] Exhaustive Fermat Prime Modulo 17 (Z_17: 100% State Efficiency):
+  Modulo m = 17: 289 / 289 (100.0%) PASS
+  Tree 16 Modular Negation Symmetry 16*W = -W = (17-W) mod 17: PASS
+
+[TEST 3] Exhaustive Modular RNS Multiplication across Moduli Sets:
+  Modulo m = 13: 169 / 169 (100.0%) PASS
+  Modulo m = 11: 121 / 121 (100.0%) PASS
+  Modulo m =  7: 49 / 49 (100.0%) PASS
+  Modulo m =  5: 25 / 25 (100.0%) PASS
+  Modulo m =  3: 9 / 9 (100.0%) PASS
+
+[TEST 4] Physical Benchmark: 16-Tree Fermat vs 15-Stage Benes Network
+  Metric                         | 15-Stage Benes   | 16-Tree Fermat     | Advantage
+  -------------------------------|------------------|--------------------|-------------------
+  Active Switches per Cell       | 1920             | 240                | 8.00x fewer switches
+  Switch Stages in Optical Path  | 15               | 4                  | 3.75x shorter path
+  Optical Insertion Loss         | 6.06          dB | 1.64            dB | +4.42 dB optical margin
+  Optical Path Flight Time       | 4.95          ps | 0.70            ps | 7.07x lower latency
+  Fermat Prime Z_17 Support      | Partial (Wasted) | Native 100%        | Zero digital register waste
+  Single Product Ceiling         | 255              | 256 (< 257)        | Bounded for Radix-16 Z_257
+===========================================================================
+VERIFICATION RESULT: ALL 16-TREE FERMAT CHECKS PASSED.
+Traceback (most recent call last):
+  File "/opt/janus/janus_mini16_sim/run_mini16_full_cosim.py", line 268, in <module>
+    main()
+  File "/opt/janus/janus_mini16_sim/run_mini16_full_cosim.py", line 242, in main
+    results = orchestrator.run_full_cosim()
+  File "/opt/janus/janus_mini16_sim/orchestrator/master_orchestrator.py", line 576, in run_full_cosim
+    self.run_tier4_rtl()
+  File "/opt/janus/janus_mini16_sim/orchestrator/master_orchestrator.py", line 310, in run_tier4_rtl
+    raise RuntimeError(f"Icarus Verilog toolchain missing (iverilog={iverilog}, vvp={vvp})")
+RuntimeError: Icarus Verilog toolchain missing (iverilog=C:\iverilog\bin\iverilog.exe, vvp=C:\iverilog\bin\vvp.exe)

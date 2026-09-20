@@ -1,0 +1,35 @@
+==============================================================================
+  PROJECT JANUS: 1,000,000-RUN STOCHASTIC FOUNDRY TOLERANCE SWEEP
+==============================================================================
+  Total Monte Carlo Samples : 1,000,000
+  Laser Launch Power        : 2.21 W (+33.44 dBm)
+  Receiver Sensitivity      : -25.05 dBm
+  MMI Cascade Stages        : 13 (1:8192 split)
+  Max Waveguide Crossings   : 32
+------------------------------------------------------------------------------
+  [*] Progress: 250,000 / 1,000,000 samples computed...
+  [*] Progress: 500,000 / 1,000,000 samples computed...
+  [*] Progress: 750,000 / 1,000,000 samples computed...
+  [*] Progress: 1,000,000 / 1,000,000 samples computed...
+------------------------------------------------------------------------------
+  STATISTICAL TOLERANCE RESULTS:
+  • Execution Time               : 2.14 s (468,187 samples/s)
+  • Nominal / Mean Link Margin   : +7.10 dB (Std: 0.051 dB)
+  • Median Link Margin (p50)     : +7.10 dB
+  • 3-Sigma Worst-Case Margin    : +6.95 dB (> 4.1x clean headroom)
+  • Minimum Observed Margin      : +6.85 dB
+  • Maximum Observed Margin      : +7.35 dB
+  • Optical Yield (Margin > 0 dB): 100.0000%
+  • High-Reliability Yield (>3dB): 100.0000%
+==============================================================================
+
+[*] Exporting Monte Carlo scientific figures to /opt/janus/output/cloud_figures...
+  [SAVED] fig_mc_convergence_vs_runs.png + .pdf
+  [SAVED] fig_mc_histogram_pdf_1m.png + .pdf
+  [SAVED] fig_mc_yield_cdf_semilog.png + .pdf
+  [SAVED] fig_mc_variance_decomposition.png + .pdf
+  [SAVED] fig_mc_process_window_2d.png + .pdf
+  [SAVED] fig_mc_cascaded_mmi_loss.png + .pdf
+  [SAVED] fig_mc_checkpoints_evolution.png + .pdf
+[SUCCESS] Monte Carlo tolerance verification completed for 1,000,000 samples.
+          Mean margin: +7.10 dB | 3-sigma margin: +6.95 dB | Yield: 100.0000%

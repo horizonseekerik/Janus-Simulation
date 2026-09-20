@@ -1,0 +1,16 @@
+=================================================================
+  100-GHz EYE DIAGRAM & BER RESULTS (1,000,000 BITS)
+=================================================================
+  Time-Domain Q-Factor : 16.11 (Target: >= 9.38 for BER < 1e-20)
+  Eye Opening Height   : 122.60 mV (81.5% opening)
+  Analytical BER       : 1.097e-58
+  Empirical Bit Errors : 0 / 999,900 bits (BER: 0.000e+00)
+  Pass Quality & Margin: True
+=================================================================
+[*] Exporting SPICE scientific figures to /opt/janus/output/cloud_figures...
+  [SAVED] fig_spice_1m_eye_density_heatmap.png + .pdf
+  [SAVED] fig_spice_ber_waterfall_curve.png + .pdf
+  [SAVED] fig_spice_strongarm_regen_histogram_1m.png + .pdf
+  [SAVED] fig_spice_jitter_distribution.png + .pdf
+  [SAVED] fig_spice_noise_psd_spectrum.png + .pdf
+  [SAVED] fig_spice_eye_checkpoints_evolution.png + .pdf
