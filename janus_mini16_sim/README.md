@@ -59,11 +59,11 @@ This directory houses the **verified 5-tier multi-physics co-simulation framewor
 
 | Tier | Simulation Engine | Physical / Architectural Scope | Deliverables & Verification |
 |---|---|---|---|
-| **Tier 1** | **3D MEEP (FDTD) & MPB** | 3D Maxwell curl solver, dual-layer $\text{Si}_3\text{N}_4\text{-on-Si}$ optical stack, 4-stage 16-Tree Fermat core ($1064\text{ nm}$), non-volatile $\text{Sb}_2\text{S}_3$ directional couplers, Talbot MMI crossings, adiabatic $\text{Si}_3\text{N}_4\text{-to-Si}$ tapers, $\text{LiTaO}_3$ Pockels modulators. | Touchstone `.s4p` S-matrices, $Q_{\text{opt}}(x,y,z)$ heat map, $\text{IL} = 1.636\text{ dB} \le 2.0\text{ dB}$, $\text{ER} \ge 25.0\text{ dB}$, zero TPA saturation. |
-| **Tier 2** | **Elmer FEM & 1D BDF** | 3D transient heat diffusion, 6-layer packaging strata, $250\ \mu\text{m}\ \text{SiO}_2$ thermal buffer, vertical Cu TDV pillars ($8\ \mu\text{m}$ diam, $10,000\ \text{mm}^{-2}$), thermal transient damping, Foster RC extraction. | $\tau_{\text{diff}} = 69.06\text{ ms}$, $T_{\text{peak}} = 25.08\text{ }^\circ\text{C} \le 65.0\text{ }^\circ\text{C}$, 5-pole state-space ROM ($R^2 = 1.000$). |
-| **Tier 3** | **Xyce SPICE & Bessel** | Vertical Cu TDVs ($R < 0.05\ \Omega$, $C < 4.2\ \text{fF}$), $\text{Ge/Si SAC}^2\text{M}$ APD receiver ($M=7$), clocked 65nm StrongARM latch ($3.5\text{ ps}$ regen), 3rd-order 105 GHz Bessel filter, PRBS-7 eye diagrams. | $\text{BER} = 1.15 \times 10^{-30} \le 10^{-18}$, practical link margin $\ge +3.45\text{ dB}$, eye opening $= 73.9\%$. |
-| **Tier 4** | **Digital CMOS RTL** | 65nm CMOS base stratum logic: 100 GHz wave-pipelined RNS encoder, 1:32 deserializer, 32-lane SIMD Wallace-Kogge unit, 12-stage CRT adder tree ($80\text{ ps}$ latency), 160-bit accumulator, JIR fault monitor in Verilog (`iverilog` + `cocotb`). | Cycle-accurate bit-exact reconstruction ($0$ clock slips, $0$ errors across 1000 randomized vectors). |
-| **Tier 5** | **Python RNS & Z3 SMT** | 5 formal Z3 mathematical proofs, Spatial One-Hot tensor router, JIR thermal scheduler, RRNS self-healing. | 5/5 formal proofs passed, 100% single-fault recovery, **$0.00000000\%$ GEMM arithmetic deviation**. |
+| **Tier 1** | **3D MEEP (FDTD) & MPB** | 3D Maxwell curl solver, dual-layer Si₃N₄-on-Si optical stack, 4-stage 16-Tree Fermat core (1064 nm), non-volatile Sb₂S₃ directional couplers, Talbot MMI crossings, adiabatic Si₃N₄-to-Si tapers, LiTaO₃ Pockels modulators. | Touchstone `.s4p` S-matrices, Q_opt(x,y,z) heat map, IL = 1.636 dB ≤ 2.0 dB, ER ≥ 25.0 dB, zero TPA saturation. |
+| **Tier 2** | **Elmer FEM & 1D BDF** | 3D transient heat diffusion, 6-layer packaging strata, 250 µm SiO₂ thermal buffer, vertical Cu TDV pillars (8 µm diam, 10,000 mm⁻²), thermal transient damping, Foster RC extraction. | τ_diff = 69.06 ms, T_peak = 25.08 °C ≤ 65.0 °C, 5-pole state-space ROM (R² = 1.000). |
+| **Tier 3** | **Xyce SPICE & Bessel** | Vertical Cu TDVs (R < 0.05 Ω, C < 4.2 fF), Ge/Si SAC²M APD receiver (M = 7), clocked 65nm StrongARM latch (3.5 ps regen), 3rd-order 105 GHz Bessel filter, PRBS-7 eye diagrams. | BER = 1.15 × 10⁻³⁰ ≤ 10⁻¹⁸, practical link margin ≥ +3.45 dB, eye opening = 73.9%. |
+| **Tier 4** | **Digital CMOS RTL** | 65nm CMOS base stratum logic: 100 GHz wave-pipelined RNS encoder, 1:32 deserializer, 32-lane SIMD Wallace-Kogge unit, 12-stage CRT adder tree (80 ps latency), 160-bit accumulator, JIR fault monitor in Verilog (`iverilog` + `cocotb`). | Cycle-accurate bit-exact reconstruction (0 clock slips, 0 errors across 1000 randomized vectors). |
+| **Tier 5** | **Python RNS & Z3 SMT** | 5 formal Z3 mathematical proofs, Spatial One-Hot tensor router, JIR thermal scheduler, RRNS self-healing. | 5/5 formal proofs passed, 100% single-fault recovery, **0.00000000% GEMM arithmetic deviation**. |
 
 
 ---
@@ -104,14 +104,14 @@ This directory houses the **verified 5-tier multi-physics co-simulation framewor
 
 | Platform | Architecture / Process Node | Die Footprint | Total Power | INT8 Throughput | INT8 Energy Efficiency | Area Density |
 |---|---|---|---|---|---|---|
-| **JANUS Mini 16-Tile** | **3D Hybrid ($\text{Sb}_2\text{S}_3$ + 100 GHz CMOS)** | **$100\text{ mm}^2$** | **$6.17\text{ W}$** | **$696.3\text{ TMAC/s}$** | **$112.8\text{ TMAC/s/W}$** | **$6.96\text{ TMAC/s/mm}^2$** |
-| **NVIDIA H100 SXM5** | Hopper (TSMC 4N) | $814\text{ mm}^2$ | $700.0\text{ W}$ | $494.8\text{ TMAC/s}$ | $0.71\text{ TMAC/s/W}$ | $0.61\text{ TMAC/s/mm}^2$ |
-| **NVIDIA B200 Blackwell** | Blackwell (TSMC 4NP Dual-Die) | $1600\text{ mm}^2$ | $1000.0\text{ W}$ | $1125.0\text{ TMAC/s}$ | $1.13\text{ TMAC/s/W}$ | $0.70\text{ TMAC/s/mm}^2$ |
+| **JANUS Mini 16-Tile** | **3D Hybrid (Sb₂S₃ + 100 GHz CMOS)** | **100 mm²** | **6.17 W** | **696.3 TMAC/s** | **112.8 TMAC/s/W** | **6.96 TMAC/s/mm²** |
+| **NVIDIA H100 SXM5** | Hopper (TSMC 4N) | 814 mm² | 700.0 W | 494.8 TMAC/s | 0.71 TMAC/s/W | 0.61 TMAC/s/mm² |
+| **NVIDIA B200 Blackwell** | Blackwell (TSMC 4NP Dual-Die) | 1600 mm² | 1000.0 W | 1125.0 TMAC/s | 1.13 TMAC/s/W | 0.70 TMAC/s/mm² |
 
-- **$159.7\times$ Higher Energy Efficiency vs. NVIDIA H100 SXM5**
-- **$100.3\times$ Higher Energy Efficiency vs. NVIDIA B200 Blackwell**
-- **$11.5\times$ Higher Compute Area Density per $\text{mm}^2$**
-- **$265.4\times$ Less Energy per LLaMA-3-8B Layer**
+- **159.7× Higher Energy Efficiency vs. NVIDIA H100 SXM5**
+- **100.3× Higher Energy Efficiency vs. NVIDIA B200 Blackwell**
+- **11.5× Higher Compute Area Density per mm²**
+- **265.4× Less Energy per LLaMA-3-8B Layer**
 
 ---
 

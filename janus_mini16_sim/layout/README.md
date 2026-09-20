@@ -24,7 +24,7 @@ No two strata share a GDS (layer, datatype) pair:
   - **Optical & Photonic Stratum (Top)**:
     - **Layer 5/0 (`LAYER_SIN_CORE`)**: Low-Loss Si₃N₄ (800×300 nm strip, 0.1 dB/cm) primary routing, Talbot MMI crossbars, 4-stage binary tree switching network.
     - **Layer 1/0 (`LAYER_SI_CORE`)**: Crystalline Si (450×220 nm) APD mesa base & taper termination (IL < 0.05 dB).
-    - **Layer 3/0 (`LAYER_LITAO3_EO`)**: Thin-Film LiTaO₃ Pockels Modulators ($r_{33} \approx 30.5$ pm/V).
+    - **Layer 3/0 (`LAYER_LITAO3_EO`)**: Thin-Film LiTaO₃ Pockels Modulators (r₃₃ ≈ 30.5 pm/V).
     - **Layer 4/0 & 4/1 (`LAYER_SB2S3_AMORPH` / `LAYER_SB2S3_CRYST`)**: Non-volatile Sb₂S₃ directional coupler switches.
     - **Layer 10/0 (`LAYER_CU_M1`)**: Cu Metal 1 RF Coplanar Electrodes & Micro-Heaters.
     - **Layer 11/0 (`LAYER_CU_M2`)**: Cu Metal 2 Global Power/Clock Mesh.
@@ -97,7 +97,7 @@ No two strata share a GDS (layer, datatype) pair:
 | Tile Core | 600 µm × 600 µm |
 | Clock Distribution | 4-level balanced H-tree (levels 1–4 trunk→terminal) |
 | Optical I/O | Dual 17-channel Fiber V-Groove Array (127 µm pitch) |
-| Vertical Interconnect | Cu TDVs (8 µm ⌀) to CMOS StrongARM latches ($R_\text{via} < 0.05\ \Omega$, $C_\text{via} < 4.2\ \text{fF}$) |
+| Vertical Interconnect | Cu TDVs (8 µm ⌀) to CMOS StrongARM latches (R_via < 0.05 Ω, C_via < 4.2 fF) |
 | Grating Coupler | 630 nm period, 50% duty cycle, 22 teeth (1310 nm / 2nd-order Si₃N₄) |
 
 ## Relative Path in Registry

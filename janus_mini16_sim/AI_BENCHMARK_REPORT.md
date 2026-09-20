@@ -65,5 +65,5 @@ This report profiles the execution of standard modern Artificial Intelligence wo
 
 - **160x Higher Energy Efficiency vs. NVIDIA H100 SXM5** (112.8 TMAC/s/W vs. 0.71 TMAC/s/W).
 - **100x Higher Energy Efficiency vs. NVIDIA B200 Blackwell** (112.8 TMAC/s/W vs. 1.13 TMAC/s/W).
-- **11.4x Higher Compute Density per mm²** ($6.96\text{ TMAC/s/mm}^2$ vs. $0.61\text{ TMAC/s/mm}^2$).
+- **11.4x Higher Compute Density per mm²** (6.96 TMAC/s/mm² vs. 0.61 TMAC/s/mm²).
 - **Bit-Exact Precision:** 0.00000000% arithmetic deviation across all quantized integer layers.

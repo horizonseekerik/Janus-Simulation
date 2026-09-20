@@ -15,13 +15,13 @@
 
 **Project JANUS** is a constraint-aware, bounded-exact optoelectronic tensor computing architecture engineered for high-throughput, low-power deep learning acceleration. 
 
-Conventional optical AI processors encode numbers in continuous analog amplitudes (Mach-Zehnder Interferometers / MZIs), accumulating optical power across analog meshes. For a $128 \times 128$ matrix multiplication, unreduced analog accumulation requires an impossible **138.4 dB SNR** (demanding a 21-bit ADC at 100 GHz sampling) and continuous milliwatt thermal tuning that consumes kilowatts of static hold power.
+Conventional optical AI processors encode numbers in continuous analog amplitudes (Mach-Zehnder Interferometers / MZIs), accumulating optical power across analog meshes. For a 128 × 128 matrix multiplication, unreduced analog accumulation requires an impossible **138.4 dB SNR** (demanding a 21-bit ADC at 100 GHz sampling) and continuous milliwatt thermal tuning that consumes kilowatts of static hold power.
 
 **JANUS solves the fundamental optical computing bottleneck by replacing analog amplitude accumulation with:**
 1. **Spatial One-Hot Residue Number System (RNS):** Numbers are mapped to spatial waveguide indices (which discrete waveguide carries light) rather than optical intensity levels.
-2. **Asymmetric 16-Tree Fermat Optical Multipliers:** Optical multiplication is mapped to cyclic permutations over Fermat prime fields $(\mathbb{Z}_{17}^\times \cong \mathbb{Z}_{16})$ using a 4-stage binary decision tree of non-volatile $\text{Sb}_2\text{S}_3$ phase-change switches—slashing insertion loss to **1.61 dB** (down from 6.06 dB in traditional 15-stage Beneš networks) with **zero static hold power ($P_{\text{hold}} = 0\text{ W}$)**.
-3. **Dynamic Greedy Descending Coprime Moduli Engine:** Dynamically selects optimal minimal coprime sets incorporating Fermat modulus $F_2 = 257$ and composite modulus $255$. Dynamically power-gates unused optical tiles (saving up to 87.5% dynamic energy for narrow bit-widths), with seamless fallback to **The Memory Trick & Three Equations (Hybrid Optical-Memory PRNS)** for arbitrary large dynamic range.
-4. **Receiverless Ge/Si $\text{SAC}^2\text{M}$ Avalanche Photodiodes (APDs):** 1-bit binary arrival detection co-integrated with clocked StrongARM dynamic latches (3.5 ps latching time, ~100 aJ per sensing event).
+2. **Asymmetric 16-Tree Fermat Optical Multipliers:** Optical multiplication is mapped to cyclic permutations over Fermat prime fields (ℤ₁₇* ≅ ℤ₁₆) using a 4-stage binary decision tree of non-volatile Sb₂S₃ phase-change switches—slashing insertion loss to **1.61 dB** (down from 6.06 dB in traditional 15-stage Beneš networks) with **zero static hold power (P_hold = 0 W)**.
+3. **Dynamic Greedy Descending Coprime Moduli Engine:** Dynamically selects optimal minimal coprime sets incorporating Fermat modulus F₂ = 257 and composite modulus 255. Dynamically power-gates unused optical tiles (saving up to 87.5% dynamic energy for narrow bit-widths), with seamless fallback to **The Memory Trick & Three Equations (Hybrid Optical-Memory PRNS)** for arbitrary large dynamic range.
+4. **Receiverless Ge/Si SAC²M Avalanche Photodiodes (APDs):** 1-bit binary arrival detection co-integrated with clocked StrongARM dynamic latches (3.5 ps latching time, ~100 aJ per sensing event).
 5. **Pipelined CMOS Mixed-Radix CRT Adder Tree:** Cycle-accurate 12-stage Garner CRT reconstruction operating with deterministic exact arithmetic up to **INT64 precision with 0 deviation**.
 
 ---
@@ -228,11 +228,11 @@ Janus Update/
 
 | Tier | Simulation Engine | Physical / Architectural Scope | Deliverables & Verification |
 |---|---|---|---|
-| **Tier 1** | **3D MEEP (FDTD) & MPB** | 3D Maxwell curl solver, 4-stage 16-Tree Fermat optical core (1064 nm), non-volatile $\text{Sb}_2\text{S}_3$ directional couplers, MMI crossings, $\text{LiTaO}_3$ Pockels routers. | Touchstone `.s4p` S-matrices, $Q_{\text{opt}}(x,y,z)$ heat map, $\text{IL} = 1.612\text{ dB} \le 2.0\text{ dB}$, $\text{ER} \ge 25.0\text{ dB}$. |
-| **Tier 2** | **Elmer FEM & 1D BDF** | 3D transient heat diffusion, 6-layer packaging strata, $250\ \mu\text{m}\ \text{SiO}_2$ buffer, thermal transient damping, Foster RC extraction. | $\tau_{\text{diff}} = 69.06\text{ ms}$, $T_{\text{peak}} = 25.08\text{ }^\circ\text{C} \le 65.0\text{ }^\circ\text{C}$, 5-pole state-space ROM ($R^2 = 1.000$). |
-| **Tier 3** | **Xyce SPICE & Bessel** | $\text{Ge/Si SAC}^2\text{M}$ APD receiver ($M=7$), clocked StrongARM latch ($3.5\text{ ps}$ regen), 3rd-order 105 GHz Bessel filter, PRBS-7 eye diagrams. | $\text{BER} = 1.15 \times 10^{-30} \le 10^{-18}$, practical link margin $\ge +3.45\text{ dB}$, eye opening $= 73.9\%$. |
-| **Tier 4** | **Digital CMOS RTL** | 100 GHz wave-pipelined RNS encoder, 12-stage CRT adder tree ($80\text{ ps}$ latency), JIR fault monitor in Verilog (`iverilog` + `cocotb`). | Cycle-accurate bit-exact reconstruction ($0$ clock slips, $0$ errors across 1000 randomized vectors). |
-| **Tier 5** | **Python RNS & Z3 SMT** | 5 formal Z3 mathematical proofs, Spatial One-Hot tensor router, JIR thermal scheduler, RRNS self-healing. | 5/5 formal proofs passed, 100% single-fault recovery, **$0.00000000\%$ GEMM arithmetic deviation**. |
+| **Tier 1** | **3D MEEP (FDTD) & MPB** | 3D Maxwell curl solver, 4-stage 16-Tree Fermat optical core (1064 nm), non-volatile Sb₂S₃ directional couplers, MMI crossings, LiTaO₃ Pockels routers. | Touchstone `.s4p` S-matrices, Q_opt(x,y,z) heat map, IL = 1.612 dB ≤ 2.0 dB, ER ≥ 25.0 dB. |
+| **Tier 2** | **Elmer FEM & 1D BDF** | 3D transient heat diffusion, 6-layer packaging strata, 250 µm SiO₂ buffer, thermal transient damping, Foster RC extraction. | τ_diff = 69.06 ms, T_peak = 25.08 °C ≤ 65.0 °C, 5-pole state-space ROM (R² = 1.000). |
+| **Tier 3** | **Xyce SPICE & Bessel** | Ge/Si SAC²M APD receiver (M = 7), clocked StrongARM latch (3.5 ps regen), 3rd-order 105 GHz Bessel filter, PRBS-7 eye diagrams. | BER = 1.15 × 10⁻³⁰ ≤ 10⁻¹⁸, practical link margin ≥ +3.45 dB, eye opening = 73.9%. |
+| **Tier 4** | **Digital CMOS RTL** | 100 GHz wave-pipelined RNS encoder, 12-stage CRT adder tree (80 ps latency), JIR fault monitor in Verilog (`iverilog` + `cocotb`). | Cycle-accurate bit-exact reconstruction (0 clock slips, 0 errors across 1000 randomized vectors). |
+| **Tier 5** | **Python RNS & Z3 SMT** | 5 formal Z3 mathematical proofs, Spatial One-Hot tensor router, JIR thermal scheduler, RRNS self-healing. | 5/5 formal proofs passed, 100% single-fault recovery, **0.00000000% GEMM arithmetic deviation**. |
 
 ---
 
@@ -345,7 +345,7 @@ Project JANUS combines multi-physics photonic wave mechanics, 3D FEM thermal dif
 |---|---|---|---|---|
 | **Environment** | **Miniconda / Conda** | Python virtual environment management & binary package resolution | Windows, Linux, macOS | [Miniconda Docs](https://docs.conda.io/en/latest/miniconda.html) |
 | **Tier 1 (Optics)** | **MEEP (Python API)** | Finite-Difference Time-Domain (FDTD) 3D Maxwell curl solver for optical couplers, crossings, and pulse routing | Linux, WSL (Ubuntu), macOS | [MEEP FDTD Docs](https://meep.readthedocs.io/en/latest/) |
-| **Tier 1 (Optics)** | **MPB (Photonic Bands)** | Frequency-domain vector Maxwell eigensolver for optical modes, $n_{\text{eff}}$, and $L_\pi$ | Linux, WSL (Ubuntu), macOS | [MPB Documentation](https://mpb.readthedocs.io/en/latest/) |
+| **Tier 1 (Optics)** | **MPB (Photonic Bands)** | Frequency-domain vector Maxwell eigensolver for optical modes, n_eff, and L_π | Linux, WSL (Ubuntu), macOS | [MPB Documentation](https://mpb.readthedocs.io/en/latest/) |
 | **Tier 2 (Thermal)** | **Elmer FEM** | 3D finite-element multiphysics solver for transient and steady-state thermal diffusion across packaging strata | Linux, WSL, Windows | [Elmer FEM Official](https://www.csc.fi/web/elmer) |
 | **Tier 2 (Thermal)** | **Gmsh** | 3D tetrahedral finite-element mesh generator for heterogeneous chiplet geometries | Linux, Windows, macOS | [Gmsh Reference](https://gmsh.info/) |
 | **Tier 2 (Thermal)** | **SciPy (BDF Solver)** | 1D multi-layer finite-volume stiff ODE backward differentiation solver (built-in physical fallback) | All Platforms | [SciPy solve_ivp](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html) |
