@@ -61,9 +61,11 @@ class MonteCarloFoundryTolerance1M:
         self.n_crossings = 32                # Max path crossings in 16x16 fabric
         self.fixed_losses_dB = 9.13          # Fixed H-tree, coupling, inter-stratum tapers
 
-    def run_simulation(self, batch_size: int = 250_000, verbose: bool = True) -> Dict[str, Any]:
+    def run_simulation(self, batch_size: int = 250_000, verbose: bool = True,
+                       export_graphs: bool = False, graph_dir: str = None) -> Dict[str, Any]:
         """
         Executes the 1,000,000-sample Monte Carlo sweep using memory-efficient chunked vectorization.
+        Optionally exports publication-grade scientific figures.
         """
         np.random.seed(self.seed)
         t_start = time.time()
@@ -189,6 +191,22 @@ class MonteCarloFoundryTolerance1M:
             print(f"  • High-Reliability Yield (>3dB): {yield_3db:.4f}%")
             print("==============================================================================\n")
 
+        # Export graphs if requested
+        if export_graphs:
+            try:
+                from cloud_hpc.cloud_graph_generator import CloudGraphGenerator, MC_CHECKPOINT_INTERVALS
+                gen = CloudGraphGenerator(output_dir=graph_dir)
+                print(f"[*] Exporting Monte Carlo scientific figures to {gen.output_dir}...")
+                gen.generate_mc_convergence_plot(margins, MC_CHECKPOINT_INTERVALS)
+                gen.generate_mc_histogram_pdf_plot(margins)
+                gen.generate_mc_yield_cdf_plot(margins)
+                gen.generate_mc_variance_decomposition_plot()
+                gen.generate_mc_process_window_2d_plot()
+                gen.generate_mc_cascaded_mmi_loss_plot()
+                gen.generate_mc_checkpoint_evolution_plot(margins, MC_CHECKPOINT_INTERVALS)
+            except Exception as e:
+                print(f"[!] Warning: Graph export failed: {e}")
+
         return {
             "n_samples": self.n_samples,
             "execution_time_s": t_elapsed,
@@ -209,10 +227,16 @@ if __name__ == "__main__":
     parser.add_argument("--samples", type=int, default=1_000_000, help="Number of stochastic runs (default: 1,000,000)")
     parser.add_argument("--batch-size", type=int, default=250_000, help="Vectorization batch size")
     parser.add_argument("--dry-run", action="store_true", help="Quick verification run with 1,000 samples")
+    parser.add_argument("--export-graphs", action="store_true", help="Generate publication-grade figures from Monte Carlo run")
+    parser.add_argument("--graph-dir", type=str, default=None, help="Directory to save figures")
     args = parser.parse_args()
 
     n_samples = 1_000 if args.dry_run else args.samples
     engine = MonteCarloFoundryTolerance1M(n_samples=n_samples)
-    res = engine.run_simulation(batch_size=args.batch_size)
+    res = engine.run_simulation(
+        batch_size=args.batch_size,
+        export_graphs=args.export_graphs,
+        graph_dir=args.graph_dir
+    )
     print(f"[SUCCESS] Monte Carlo tolerance verification completed for {res['n_samples']:,} samples.")
     print(f"          Mean margin: +{res['mean_margin_dB']:.2f} dB | 3-sigma margin: +{res['sigma_3_margin_dB']:.2f} dB | Yield: {res['yield_positive_pct']:.4f}%")

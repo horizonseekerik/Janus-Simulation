@@ -327,5 +327,7 @@ janus_mini16_sim/
 └── cloud_hpc/                             # Google Cloud (GCP) HPC Infrastructure
     ├── Dockerfile.cloud_hpc               # Full multi-physics container image
     ├── gcp_canary_startup.sh              # Single-instance canary validation runner
-    └── gcp_production_orchestrator.sh     # Production HPC batch orchestration script
+    ├── gcp_production_orchestrator.sh     # Production HPC batch orchestration script
+    ├── cloud_graph_generator.py           # 1,000,000-run scientific graphing & checkpoint engine (19 figures)
+    └── test_cloud_graphs.py               # Automated test harness for cloud graphing suite
 ```

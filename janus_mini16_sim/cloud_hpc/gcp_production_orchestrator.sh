@@ -69,8 +69,10 @@ for i in {4..9}; do
     cat <<EOF > "/tmp/startup_mc_${i}.sh"
 #!/usr/bin/env bash
 cd /workspace/janus
-python3 janus_mini16_sim/tier1_meep_optics/monte_carlo_tolerance.py --samples 166667 --batch-size 50000 > "/workspace/janus/mc_worker_${i}.log" 2>&1
+mkdir -p /workspace/janus/figures/mc_${i}
+python3 janus_mini16_sim/tier1_meep_optics/monte_carlo_tolerance.py --samples 166667 --batch-size 50000 --export-graphs --graph-dir "/workspace/janus/figures/mc_${i}" > "/workspace/janus/mc_worker_${i}.log" 2>&1
 gsutil cp "/workspace/janus/mc_worker_${i}.log" "${BUCKET}/${TIMESTAMP}/"
+gsutil cp -r "/workspace/janus/figures/mc_${i}" "${BUCKET}/${TIMESTAMP}/figures/" || true
 sudo shutdown -h now
 EOF
 
@@ -89,13 +91,15 @@ for j in {0..4}; do
     cat <<EOF > "/tmp/startup_spice_${j}.sh"
 #!/usr/bin/env bash
 cd /workspace/janus
-python3 janus_mini16_sim/tier3_xyce_circuit/eye_diagram_ber.py --bits 200000 > "/workspace/janus/spice_worker_${j}.log" 2>&1
+mkdir -p /workspace/janus/figures/spice_${j}
+python3 janus_mini16_sim/tier3_xyce_circuit/eye_diagram_ber.py --bits 200000 --export-graphs --graph-dir "/workspace/janus/figures/spice_${j}" > "/workspace/janus/spice_worker_${j}.log" 2>&1
 python3 janus_mini16_sim/tier3_xyce_circuit/strongarm_latch.py --cycles 200000 >> "/workspace/janus/spice_worker_${j}.log" 2>&1
 # If Xyce is installed in the cloud container, execute the 4-port S-parameter SPICE subcircuit
 if command -v Xyce &> /dev/null; then
     Xyce -o "/workspace/janus/xyce_out_${j}.prn" janus_mini16_sim/tier3_xyce_circuit/optical_switch_sp.cir >> "/workspace/janus/spice_worker_${j}.log" 2>&1 || true
 fi
 gsutil cp "/workspace/janus/spice_worker_${j}.log" "${BUCKET}/${TIMESTAMP}/"
+gsutil cp -r "/workspace/janus/figures/spice_${j}" "${BUCKET}/${TIMESTAMP}/figures/" || true
 sudo shutdown -h now
 EOF
 
@@ -135,10 +139,14 @@ cd /workspace/janus
 python3 janus_mini16_sim/run_mini16_full_cosim.py --monolithic --sim-time-ps 1000.0 > "/workspace/janus/monolithic_dynamic_cosim.log" 2>&1
 python3 janus_mini16_sim/run_mini16_full_cosim.py --tier all --verbose > "/workspace/janus/full_cosim_all_tiers.log" 2>&1
 python3 janus_mini16_sim/run_mini16_full_cosim.py --power-area > "/workspace/janus/power_and_area_audit.log" 2>&1
+# Generate full 19-figure publication suite and OFC 3-page composite dashboards
+python3 janus_mini16_sim/cloud_hpc/cloud_graph_generator.py --output-dir "/workspace/janus/figures/final_1m_publication" --samples 1000000 --cycles 1000000 > "/workspace/janus/cloud_graphs.log" 2>&1
 gsutil cp "/workspace/janus/monolithic_dynamic_cosim.log" "${BUCKET}/${TIMESTAMP}/"
 gsutil cp "/workspace/janus/full_cosim_all_tiers.log" "${BUCKET}/${TIMESTAMP}/"
 gsutil cp "/workspace/janus/power_and_area_audit.log" "${BUCKET}/${TIMESTAMP}/"
+gsutil cp "/workspace/janus/cloud_graphs.log" "${BUCKET}/${TIMESTAMP}/"
 gsutil cp -r "/workspace/janus/orchestrator/artifacts" "${BUCKET}/${TIMESTAMP}/"
+gsutil cp -r "/workspace/janus/figures" "${BUCKET}/${TIMESTAMP}/"
 sudo shutdown -h now
 EOF
 
@@ -151,3 +159,5 @@ gcloud compute instances create "janus-monolithic-${TIMESTAMP}" \
 wait
 echo "[*] All distributed jobs dispatched successfully."
 echo "[*] Monitor progress in Cloud Storage: ${BUCKET}/${TIMESTAMP}/"
+echo "[*] All 19 publication-grade figures will be located in: ${BUCKET}/${TIMESTAMP}/figures/"
+

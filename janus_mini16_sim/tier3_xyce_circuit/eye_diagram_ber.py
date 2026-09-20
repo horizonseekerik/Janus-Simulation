@@ -210,6 +210,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="100 GHz Eye Diagram & BER Solver")
     parser.add_argument("--bits", type=int, default=1_000_000, help="Number of bits/cycles to simulate")
     parser.add_argument("--dry-run", action="store_true", help="Quick verification run with 1,000 bits")
+    parser.add_argument("--export-graphs", action="store_true", help="Generate publication-grade figures from SPICE run")
+    parser.add_argument("--graph-dir", type=str, default=None, help="Directory to save figures")
     args = parser.parse_args()
 
     solver = EyeDiagramAndBERSolver()
@@ -223,4 +225,19 @@ if __name__ == "__main__":
     print(f"  Empirical Bit Errors : {res['bit_errors_observed']} / {res['eval_bits']:,} bits (BER: {res['BER_empirical']:.3e})")
     print(f"  Pass Quality & Margin: {res['pass_Q']}")
     print("=" * 65)
+
+    if args.export_graphs:
+        try:
+            from cloud_hpc.cloud_graph_generator import CloudGraphGenerator, SPICE_CHECKPOINT_INTERVALS
+            gen = CloudGraphGenerator(output_dir=args.graph_dir)
+            print(f"[*] Exporting SPICE scientific figures to {gen.output_dir}...")
+            gen.generate_spice_2d_eye_density_heatmap(n_cycles=res['num_bits_simulated'])
+            gen.generate_spice_ber_waterfall_plot()
+            gen.generate_spice_strongarm_regen_plot(n_cycles=res['num_bits_simulated'])
+            gen.generate_spice_jitter_distribution_plot()
+            gen.generate_spice_noise_psd_spectrum_plot()
+            gen.generate_spice_checkpoint_evolution_plot(SPICE_CHECKPOINT_INTERVALS)
+        except Exception as e:
+            print(f"[!] Warning: SPICE graph export failed: {e}")
+
 
