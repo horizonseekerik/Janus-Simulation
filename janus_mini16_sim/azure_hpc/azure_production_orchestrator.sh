@@ -39,15 +39,20 @@ az storage account create \
 STORAGE_KEY=$(az storage account keys list --resource-group "${RESOURCE_GROUP}" --account-name "${STORAGE_ACCOUNT}" --query "[0].value" --output tsv)
 az storage container create --name "${CONTAINER_NAME}" --account-name "${STORAGE_ACCOUNT}" --account-key "${STORAGE_KEY}" --output table
 
-# 3. Create Cloud Startup Script
-cat <<'EOF' > /tmp/azure_janus_startup.sh
+# Generate 7-day write SAS token for hands-free background upload
+SAS_EXPIRY=$(date -u -d "7 days" '+%Y-%m-%dT%H:%MZ' 2>/dev/null || date -u -v+7d '+%Y-%m-%dT%H:%MZ')
+SAS_TOKEN=$(az storage container generate-sas --account-name "${STORAGE_ACCOUNT}" --name "${CONTAINER_NAME}" --account-key "${STORAGE_KEY}" --permissions rwl --expiry "${SAS_EXPIRY}" --output tsv)
+BLOB_UPLOAD_URL="https://${STORAGE_ACCOUNT}.blob.core.windows.net/${CONTAINER_NAME}/janus_1m_results.tar.gz?${SAS_TOKEN}"
+
+# 3. Create Cloud Startup Script (Runs 100% in Background inside the VM)
+cat <<EOF > /tmp/azure_janus_startup.sh
 #!/usr/bin/env bash
 set -e
 export DEBIAN_FRONTEND=noninteractive
 
 echo "[*] Updating system packages & installing dependencies..."
 apt-get update -y
-apt-get install -y git python3 python3-pip python3-venv libopenmpi-dev openmpi-bin gmsh
+apt-get install -y git python3 python3-pip python3-venv libopenmpi-dev openmpi-bin gmsh curl
 
 cd /opt
 git clone https://github.com/horizonseekerik/janus-photonic-hardware.git janus
@@ -74,7 +79,11 @@ echo "[*] Compressing all figures, logs, and artifacts..."
 cd /opt/janus
 tar -czvf /opt/janus_1m_results.tar.gz output/ janus_mini16_sim/output/ janus_mini16_sim/orchestrator/artifacts/
 
-echo "[*] All simulations finished successfully!"
+echo "[*] Uploading completed archive directly to Azure Storage Container..."
+curl -X PUT -T /opt/janus_1m_results.tar.gz -H "x-ms-blob-type: BlockBlob" "${BLOB_UPLOAD_URL}"
+
+echo "[*] All simulations finished and uploaded to Azure Storage! Shutting down VM to save credit..."
+sudo shutdown -h now
 EOF
 
 # 4. Launch Azure VM (Standard on-demand 4-vCPU)
