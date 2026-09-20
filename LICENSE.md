@@ -2,7 +2,7 @@ PolyForm Noncommercial License 1.0.0
 
 https://polyformproject.org/licenses/noncommercial/1.0.0/
 
-Copyright (c) [2026] [Deepanshu / Your Name or Organization]
+Copyright (c) [2026] [Deepanshu]
 
 1. License
 The licensor grants you a nonexclusive, royalty-free, worldwide, non-sublicensable license to exercise the Licensed Rights in the Material to perform any modification, creation of derivative works, display, performance, and distribution, for Noncommercial Purposes only.
