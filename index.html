@@ -5859,6 +5859,42 @@
                     "name": "monolithic_dynamic_cosim.py",
                     "path": "janus_mini16_sim/orchestrator/monolithic_dynamic_cosim.py",
                     "desc": "Monolithic Dynamic Multi-Physics Co-Simulation Engine (Optical, Thermal, Circuit, BER)"
+                },
+                {
+                    "name": "test_orchestrator.py",
+                    "path": "janus_mini16_sim/orchestrator/test_orchestrator.py",
+                    "desc": "Master Orchestrator Verification Suite"
+                },
+                {
+                    "name": "check.py",
+                    "path": "janus_mini16_sim/check.py",
+                    "desc": "Full 5-Tier Verification & Diagnostic Self-Test Suite"
+                }
+            ]
+        },
+        {
+            "category": "Physical Layout & Packaging (GDS II)",
+            "tier": "layout",
+            "files": [
+                {
+                    "name": "generate_mini16_gds.py",
+                    "path": "janus_mini16_sim/layout/generate_mini16_gds.py",
+                    "desc": "Photonic Top-Die GDS II Mask Synthesizer (Si3N4 Core, LiTaO3, Sb2S3 16-Tree, SAC2M APD, Cu TDV)"
+                },
+                {
+                    "name": "generate_cmos_base_gds.py",
+                    "path": "janus_mini16_sim/layout/generate_cmos_base_gds.py",
+                    "desc": "65nm CMOS Base-Die GDS II Mask Synthesizer (StrongARM, Deserializers, Wallace-Kogge SIMD, Dual-LUT SRAM)"
+                },
+                {
+                    "name": "janus_layer_constants.py",
+                    "path": "janus_mini16_sim/layout/janus_layer_constants.py",
+                    "desc": "Tapeout-Grade GDS II Physical Layer Map & Micron Dimension Registry"
+                },
+                {
+                    "name": "README.md",
+                    "path": "janus_mini16_sim/layout/README.md",
+                    "desc": "GDS II Mask Synthesis & KLayout CAD Visualization Guide"
                 }
             ]
         },
@@ -5896,6 +5932,31 @@
                     "name": "asymmetric_16tree_sim.py",
                     "path": "janus_mini16_sim/tier1_meep_optics/asymmetric_16tree_sim.py",
                     "desc": "Asymmetric 16-Tree Fermat Core Optical FDTD Simulation (4 Stages, 1.61 dB Loss)"
+                },
+                {
+                    "name": "sb2s3_switch_cell.py",
+                    "path": "janus_mini16_sim/tier1_meep_optics/sb2s3_switch_cell.py",
+                    "desc": "3D FDTD of Sb2S3 PCM Directional Coupler Switch (0.263 dB IL, 51.9 dB ER)"
+                },
+                {
+                    "name": "waveguide_crossing.py",
+                    "path": "janus_mini16_sim/tier1_meep_optics/waveguide_crossing.py",
+                    "desc": "Talbot Self-Imaging MMI Waveguide Crossing (0.095 dB IL, -52.82 dB XT)"
+                },
+                {
+                    "name": "mmi_1x2_splitter.py",
+                    "path": "janus_mini16_sim/tier1_meep_optics/mmi_1x2_splitter.py",
+                    "desc": "1:2 MMI Splitter Taper Optimization (0.140 dB IL, +1.95 dB Net Link Margin Gain)"
+                },
+                {
+                    "name": "litao3_pockels_router.py",
+                    "path": "janus_mini16_sim/tier1_meep_optics/litao3_pockels_router.py",
+                    "desc": "100 GHz LiTaO3 Electro-Optic Pockels Modulator Tree"
+                },
+                {
+                    "name": "test_tier1_all.py",
+                    "path": "janus_mini16_sim/tier1_meep_optics/test_tier1_all.py",
+                    "desc": "Tier 1 Optics Unit Test Suite & Analytical MZI / 16-Tree Solvers"
                 }
             ]
         },
@@ -5907,6 +5968,21 @@
                     "name": "elmer_thermal_solver.py",
                     "path": "janus_mini16_sim/tier2_elmer_thermal/elmer_thermal_solver.py",
                     "desc": "3D Multi-Layer FEM Thermal Solver & Boundary Validator"
+                },
+                {
+                    "name": "gmsh_mesh_generator.py",
+                    "path": "janus_mini16_sim/tier2_elmer_thermal/gmsh_mesh_generator.py",
+                    "desc": "330 um Multi-Layer Active Stack 3D Tetrahedral Mesh Generator"
+                },
+                {
+                    "name": "extract_thermal_rom.py",
+                    "path": "janus_mini16_sim/tier2_elmer_thermal/extract_thermal_rom.py",
+                    "desc": "Reduced-Order Foster RC Thermal Impedance Extractor (R² = 1.000)"
+                },
+                {
+                    "name": "test_tier2_all.py",
+                    "path": "janus_mini16_sim/tier2_elmer_thermal/test_tier2_all.py",
+                    "desc": "Tier 2 Thermal Multi-Physics Unit Test Suite"
                 }
             ]
         },
@@ -5928,6 +6004,21 @@
                     "name": "eye_diagram_ber.py",
                     "path": "janus_mini16_sim/tier3_xyce_circuit/eye_diagram_ber.py",
                     "desc": "100 GHz Eye Diagram Opening (77.0% Adaptive Tracking) & Dynamic BER (0.0)"
+                },
+                {
+                    "name": "ilo_comb_lock.py",
+                    "path": "janus_mini16_sim/tier3_xyce_circuit/ilo_comb_lock.py",
+                    "desc": "50 fs Injection-Locked Oscillator Comb Receiver Clock"
+                },
+                {
+                    "name": "vector_fit_s_params.py",
+                    "path": "janus_mini16_sim/tier3_xyce_circuit/vector_fit_s_params.py",
+                    "desc": "Rational Vector Fitting & SPICE Subcircuit Synthesizer"
+                },
+                {
+                    "name": "test_tier3_all.py",
+                    "path": "janus_mini16_sim/tier3_xyce_circuit/test_tier3_all.py",
+                    "desc": "Tier 3 Mixed-Signal APD & StrongARM Test Suite"
                 }
             ]
         },
@@ -5946,14 +6037,34 @@
                     "desc": "8-Stage Pipelined Mixed-Radix CRT Adder Tree (80 ps latency)"
                 },
                 {
+                    "name": "rom_macros.v",
+                    "path": "janus_mini16_sim/tier4_rtl_digital/rom_macros.v",
+                    "desc": "Radix-16 Pre-Computed ROM Lookup Macros for Wave-Pipelined RNS"
+                },
+                {
+                    "name": "jir_fault_monitor.v",
+                    "path": "janus_mini16_sim/tier4_rtl_digital/jir_fault_monitor.v",
+                    "desc": "Real-Time Residue Consistency & RRNS Parity Monitor"
+                },
+                {
+                    "name": "janus_tier4_top.v",
+                    "path": "janus_mini16_sim/tier4_rtl_digital/janus_tier4_top.v",
+                    "desc": "Top-Level Integrated CMOS Digital Architecture Wrapper"
+                },
+                {
                     "name": "rtl_synthesis_analyzer.py",
                     "path": "janus_mini16_sim/tier4_rtl_digital/rtl_synthesis_analyzer.py",
                     "desc": "Yosys RTL Synthesis Parser & Static Timing Closure Analyzer"
+                },
+                {
+                    "name": "test_tier4_all.py",
+                    "path": "janus_mini16_sim/tier4_rtl_digital/test_tier4_all.py",
+                    "desc": "Tier 4 RTL Multi-Channel Verification Suite"
                 }
             ]
         },
         {
-            "category": "Tier 5: Residue Number System & Formal Verification",
+            "category": "Tier 5: Residue Number System & AI Benchmarks",
             "tier": "tier5",
             "files": [
                 {
@@ -5970,13 +6081,63 @@
                     "name": "formal_verifier.py",
                     "path": "janus_mini16_sim/tier5_python_rns/formal_verifier.py",
                     "desc": "Formal Z3 SMT Mathematical Proofs (5/5 Proved)"
+                },
+                {
+                    "name": "benchmark_16tree_gemm.py",
+                    "path": "janus_mini16_sim/tier5_python_rns/benchmark_16tree_gemm.py",
+                    "desc": "Asymmetric 16-Tree Fermat Core GEMM Validation & Baseline Comparison"
+                },
+                {
+                    "name": "ai_workload_benchmarks.py",
+                    "path": "janus_mini16_sim/tier5_python_rns/ai_workload_benchmarks.py",
+                    "desc": "LLaMA-3-8B, GPT-2, and ViT Execution Profiler"
+                },
+                {
+                    "name": "gpu_comparator.py",
+                    "path": "janus_mini16_sim/tier5_python_rns/gpu_comparator.py",
+                    "desc": "Throughput & Energy Scaling Comparator vs NVIDIA H100 / B200"
+                },
+                {
+                    "name": "batch_token_packer.py",
+                    "path": "janus_mini16_sim/tier5_python_rns/batch_token_packer.py",
+                    "desc": "Multi-Head Attention & Batch MLP Spatial Token Packer"
+                },
+                {
+                    "name": "test_tier5_all.py",
+                    "path": "janus_mini16_sim/tier5_python_rns/test_tier5_all.py",
+                    "desc": "Tier 5 Comprehensive Python RNS & Formal Verification Unit Test Suite"
                 }
             ]
         },
         {
-            "category": "Documentation & Dependencies",
-            "tier": "docs",
+            "category": "AI Benchmarks & First-Principles Physics",
+            "tier": "benchmarks",
             "files": [
+                {
+                    "name": "first_principles_power_and_area.py",
+                    "path": "janus_mini16_sim/benchmarks/first_principles_power_and_area.py",
+                    "desc": "First-Principles Physics-Based Power (3.35 W) & Area (10.24 mm²) Calculator"
+                },
+                {
+                    "name": "run_ai_profiling.py",
+                    "path": "janus_mini16_sim/benchmarks/run_ai_profiling.py",
+                    "desc": "Standalone AI Workload Profiling & Model Evaluation CLI Runner"
+                },
+                {
+                    "name": "test_ai_profiling.py",
+                    "path": "janus_mini16_sim/benchmarks/test_ai_profiling.py",
+                    "desc": "AI Workload Layer-by-Layer Verification Test Harness"
+                },
+                {
+                    "name": "test_batch_packing.py",
+                    "path": "janus_mini16_sim/benchmarks/test_batch_packing.py",
+                    "desc": "Spatial Token Packing & Multi-Head Attention Verification Harness"
+                },
+                {
+                    "name": "test_first_principles_power_and_area.py",
+                    "path": "janus_mini16_sim/benchmarks/test_first_principles_power_and_area.py",
+                    "desc": "Unit Tests for 3.35 W Power & 10.24 mm² Area Physical Models"
+                },
                 {
                     "name": "requirements.txt",
                     "path": "janus_mini16_sim/requirements.txt",
@@ -9046,7 +9207,12 @@
 
       try {
         const endpoint = forceRerun ? '/api/full_cosim' : '/api/matrix_data';
-        const res = await fetch(endpoint).then(r => r.json());
+        const rawRes = await fetch(endpoint);
+        if (!rawRes.ok) {
+          const errText = await rawRes.text();
+          throw new Error(`HTTP ${rawRes.status}: ${errText.slice(0, 100)}`);
+        }
+        const res = await rawRes.json();
         const checks = res.checks || [];
 
         tbody.innerHTML = '';
@@ -9120,7 +9286,12 @@
       }
 
       try {
-        const res = await fetch(`/api/run_single_check?id=${checkId}`).then(r => r.json());
+        const rawRes = await fetch(`/api/run_single_check?id=${checkId}`);
+        if (!rawRes.ok) {
+          const errText = await rawRes.text();
+          throw new Error(`HTTP ${rawRes.status}: ${errText.slice(0, 100)}`);
+        }
+        const res = await rawRes.json();
         if (res && res.check) {
           const c = res.check;
           if (valEl) {
@@ -9156,7 +9327,12 @@
       if (!tbody) return;
 
       try {
-        const res = await fetch(`/api/run_tier?tier=${tierId}`).then(r => r.json());
+        const rawRes = await fetch(`/api/run_tier?tier=${tierId}`);
+        if (!rawRes.ok) {
+          const errText = await rawRes.text();
+          throw new Error(`HTTP ${rawRes.status}: ${errText.slice(0, 100)}`);
+        }
+        const res = await rawRes.json();
         if (res.checks && res.checks.length > 0) {
           res.checks.forEach(c => {
             const valEl = document.getElementById(`check-val-${c.id}`);
