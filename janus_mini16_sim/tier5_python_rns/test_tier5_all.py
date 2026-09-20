@@ -21,7 +21,10 @@ from tier5_python_rns.moduli_generator import (
     crt_reconstruct,
     get_tiles_for_precision,
 )
-from tier5_python_rns.formal_verifier import run_formal_verification
+from tier5_python_rns.formal_verifier import (
+    run_formal_verification,
+    verify_spatial_one_hot_invariants,
+)
 from tier5_python_rns.spatial_one_hot_router import SpatialOneHotAccelerator
 from tier5_python_rns.jir_thermal_scheduler import JIRThermalScheduler
 from tier5_python_rns.rrns_self_healing import RRNSSelfHealingEngine
@@ -182,6 +185,17 @@ def test_batch_token_packer():
     assert mlp_res.bit_exact_match is True
 
 
+def test_edge_case_30_spatial_one_hot_invariants():
+    """Verify Edge Case 30: Spatial One-Hot Invariant Violations & RRNS Projection."""
+    res = verify_spatial_one_hot_invariants(num_trials=500)
+    assert res["pass_one_hot_invariant"] is True
+    assert res["pass_single_dynamic_range"] is True
+    assert res["pass_dual_dynamic_range"] is True
+    assert res["pass_rrns_projection_recovery"] is True
+    assert res["erasure_correction_rate"] == 1.0
+    assert res["all_passed"] is True
+
+
 if __name__ == "__main__":
     print("Running Tier 5 Python RNS & Formal Verification unit tests...")
     print("Testing Moduli Generator & CRT Round-Trip (Algorithm 5A)...")
@@ -211,5 +225,8 @@ if __name__ == "__main__":
     print("Testing Batch Token Packer...")
     test_batch_token_packer()
     print("  [PASS] Batch Token Packer")
+    print("Testing Edge Case 30 (Spatial One-Hot Invariants & RRNS Projection)...")
+    test_edge_case_30_spatial_one_hot_invariants()
+    print("  [PASS] Edge Case 30: Spatial One-Hot Invariants & RRNS Projection")
     print("\nAll Tier 5 Python RNS unit tests passed successfully!")
 

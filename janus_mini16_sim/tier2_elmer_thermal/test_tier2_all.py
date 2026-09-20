@@ -161,6 +161,31 @@ def test_extract_thermal_rom_alg2d():
     assert all(t > 0.0 for t in res["tau_poles_s"]), "Fitted time constants must be positive"
     assert all(np.isfinite(res["tau_poles_s"])), "Fitted time constants must be finite"
 
+
+def test_edge_cases_26_to_28_thermal():
+    """Verify Edge Cases 26, 27 & 28: CTE Birefringence, Kapitza Resistance & Lateral Crosstalk."""
+    solver = TransientThermal1D()
+
+    # Case 26: Anisotropic CTE mismatch & photoelastic birefringence
+    cte = solver.evaluate_cte_mismatch_birefringence(delta_T_K=60.0)
+    assert cte["is_birefringence_tolerable"] is True
+    assert cte["birefringence_delta_n"] < 1.0e-3
+    assert cte["strain_11"] > 0.0
+
+    # Case 27: Kapitza thermal boundary resistance
+    kapitza = solver.evaluate_kapitza_boundary_resistance()
+    assert kapitza["is_die_boundary_negligible"] is True
+    assert kapitza["is_nano_boundary_tolerable"] is True
+    assert kapitza["delta_T_die_boundary_mK"] < 5.0
+    assert kapitza["delta_T_nano_boundary_K"] < 5.0
+
+    # Case 28: Lateral inter-waveguide thermal crosstalk
+    xtalk = solver.evaluate_lateral_thermal_crosstalk(pitch_um=1.5, q_line_W_per_m=0.01)
+    assert xtalk["is_thermal_crosstalk_negligible"] is True
+    assert xtalk["delta_T_lateral_mK"] < 10.0
+    assert xtalk["delta_phi_crosstalk_rad"] < 0.05
+
+
 if __name__ == "__main__":
     print("Running Tier 2 Thermal unit tests...")
     print("Testing 1D Stack Analytical Benchmark & Spatial Mesh Convergence...")
@@ -175,4 +200,8 @@ if __name__ == "__main__":
     print("Testing Thermal ROM Extractor (Algorithm 2D)...")
     test_extract_thermal_rom_alg2d()
     print("  [PASS] Thermal ROM Extractor")
+    print("Testing Edge Cases 26 to 28 (CTE Birefringence, Kapitza Boundary & Lateral Crosstalk)...")
+    test_edge_cases_26_to_28_thermal()
+    print("  [PASS] Edge Cases 26 to 28: Thermo-Mechanical & Packaging Multi-Physics")
     print("All Tier 2 Thermal unit tests passed successfully!")
+

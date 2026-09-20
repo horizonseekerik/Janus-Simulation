@@ -70,6 +70,7 @@ from tier5_python_rns.spatial_one_hot_router import SpatialOneHotAccelerator
 from tier5_python_rns.jir_thermal_scheduler import JIRThermalScheduler
 from tier5_python_rns.rrns_self_healing import RRNSSelfHealingEngine
 from tier5_python_rns.gemm_exact_benchmark import run_gemm_precision_benchmark
+from orchestrator.monolithic_dynamic_cosim import MonolithicDynamicCoSimulator, run_monolithic_dynamic_cosim
 
 
 @dataclass
@@ -664,6 +665,29 @@ class JanusMasterOrchestrator:
             "execution_time_s": round(exec_time, 3),
             "timestamp": time.strftime("%H:%M:%S")
         }
+
+    def run_monolithic_dynamic_cosim(
+        self,
+        sim_time_ps: float = 200.0,
+        val_a: int = 123456789,
+        val_b: int = 987654321,
+    ) -> Dict[str, Any]:
+        """
+        Executes the Monolithic Dynamic Multi-Physics Co-Simulation.
+        Simultaneously integrates RF, electro-optics, 3D thermal diffusion,
+        SPICE APD/StrongARM latch, and digital CRT/RRNS logic across continuous time.
+        """
+        self.log("=== EXECUTING MONOLITHIC DYNAMIC MULTI-PHYSICS CO-SIMULATION ===", "DYNAMIC")
+        t0 = time.time()
+        sim_results = run_monolithic_dynamic_cosim(
+            sim_time_ps=sim_time_ps,
+            val_a=val_a,
+            val_b=val_b,
+        )
+        elapsed = time.time() - t0
+        self.execution_times["monolithic_dynamic"] = elapsed
+        self.log(f"Monolithic dynamic co-simulation completed in {elapsed:.3f}s", "DYNAMIC")
+        return sim_results
 
     def evaluate_custom_integer(
         self, X: int, print_output: bool = True, dynamic_minimal: bool = True

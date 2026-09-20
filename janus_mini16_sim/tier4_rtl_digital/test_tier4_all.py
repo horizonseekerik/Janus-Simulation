@@ -142,10 +142,26 @@ def test_cocotb_top_simulation():
     )
 
 
+def test_edge_case_31_mrc_pipelining_hazards():
+    """Verify Edge Case 31: Mixed-Radix Conversion (MRC) Pipelining Hazards & Latency."""
+    from tier4_rtl_digital.rtl_synthesis_analyzer import RTLSynthesisAnalyzer
+    analyzer = RTLSynthesisAnalyzer()
+    res = analyzer.evaluate_mrc_pipelining_hazards(f_clk=1.0e9, num_stages=8, technology_node="7nm")
+    assert res["pass_pipelined_mrc_hazard"] is True
+    assert res["is_timing_met"] is True
+    assert res["f_max_ghz"] > 2.5
+    assert res["num_pipeline_stages"] == 8
+    assert res["throughput_reconstructions_per_cycle"] == 1.0
+    assert res["cosim_timescale_ratio"] > 100.0
+
+
 if __name__ == "__main__":
     test_tb_crt_adder_tree()
     test_tb_audit_stress_1000_vectors()
     test_tb_rns_standalone()
     test_tb_crt_standalone()
     test_tb_jir_fault_injection_campaign()
+    test_edge_case_31_mrc_pipelining_hazards()
+    print("  [PASS] Edge Case 31: MRC Pipelining Hazards & Latency Analysis")
     test_cocotb_top_simulation()
+

@@ -117,10 +117,11 @@ class Sb2S3SwitchCellMeep:
         if not HAS_MEEP:
             n_eff_bare = getattr(cfg, "n_eff_si_strip_1064nm", 2.9645)
             delta_n_mat = cfg.n_sb2s3_cryst - cfg.n_sb2s3_amorph
-            gamma = 0.0238
-            delta_neff = gamma * delta_n_mat
-            n_eff_am = n_eff_bare + 0.0140
-            n_eff_cr = n_eff_am + delta_neff
+            # Confinement factor Gamma scales with patch thickness H_patch and waveguide width W_wg
+            gamma = float(0.0238 * (self.H_patch / 0.030) * (self.W_wg / 0.500))
+            delta_neff = float(gamma * delta_n_mat)
+            n_eff_am = float(n_eff_bare + 0.0140 * (self.H_patch / 0.030))
+            n_eff_cr = float(n_eff_am + delta_neff)
             res = {
                 "n_eff_bare": float(n_eff_bare),
                 "n_eff_amorph": float(n_eff_am),
@@ -213,18 +214,19 @@ class Sb2S3SwitchCellMeep:
           - delta_n_super = n_even - n_odd
           - L_c = lambda_0 / (2 * delta_n_super) (coupling beat length)
           - kappa = pi / (2 * L_c) (coupling coefficient)
-          
-        Note: The actual full-device interaction length L_patch in 2D FDTD is calibrated
-        against the eigensolved bare supermode L_c to account for distributed coupling
-        accumulated within the finite flared taper transitions (L_taper = 6.0 um).
         """
         g = self.gap if gap_um is None else float(gap_um)
         if not HAS_MEEP:
-            n_even = 2.9750
-            n_odd = 2.9609
-            delta_n = n_even - n_odd
-            Lc = self.lambda_0 / (2.0 * delta_n) if delta_n > 0 else 37.71
-            kappa = math.pi / (2.0 * Lc) if Lc > 0 else 0.0416
+            # Physical coupled-mode theory: Delta_n_super(g) = 2 * Delta_n_0 * exp(-gamma_clad * (g - g_0))
+            n_eff_bare = getattr(cfg, "n_eff_si_strip_1064nm", 2.9645)
+            gamma_clad = (2.0 * math.pi / self.lambda_0) * math.sqrt(max(n_eff_bare**2 - cfg.n_sio2**2, 1e-6))
+            g0 = 0.200  # nominal 200 nm gap
+            delta_n_0 = 0.0141 / 2.0
+            delta_n = float(2.0 * delta_n_0 * math.exp(-gamma_clad * (g - g0)))
+            n_even = float(n_eff_bare + delta_n / 2.0)
+            n_odd = float(n_eff_bare - delta_n / 2.0)
+            Lc = float(self.lambda_0 / (2.0 * max(delta_n, 1e-9)))
+            kappa = float(math.pi / (2.0 * Lc))
             res = {
                 "gap_nm": float(g * 1000.0),
                 "n_even": float(n_even),

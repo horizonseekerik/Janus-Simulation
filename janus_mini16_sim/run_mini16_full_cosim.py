@@ -135,6 +135,31 @@ def main():
         help="Switch cell topology for Tier 1 ('mzi' [default] or 'directional_coupler')",
     )
 
+    parser.add_argument(
+        "--monolithic",
+        action="store_true",
+        default=False,
+        help="Execute the Monolithic Dynamic Multi-Physics Co-Simulation (coupled optical-thermal-electrical DAEs)",
+    )
+    parser.add_argument(
+        "--sim-time-ps",
+        type=float,
+        default=200.0,
+        help="Simulation window in picoseconds for monolithic dynamic co-simulation (default: 200.0 ps)",
+    )
+    parser.add_argument(
+        "--power-area",
+        action="store_true",
+        default=False,
+        help="Execute First-Principles Power Draw and Physical Die Area Audit (100% component activity)",
+    )
+    parser.add_argument(
+        "--activity-factor",
+        type=float,
+        default=1.0,
+        help="Component switching activity factor for dynamic power calculation (0.0 to 1.0, default: 1.0)",
+    )
+
     args = parser.parse_args()
 
     orchestrator = JanusMasterOrchestrator(
@@ -142,6 +167,50 @@ def main():
         output_dir=args.output_dir,
         switch_topology=args.switch_topology,
     )
+
+    # 0. First-Principles Power & Area Audit
+    if args.power_area:
+        from benchmarks.first_principles_power_and_area import run_first_principles_audit
+        print(f"Executing First-Principles Power and Area Audit (Activity Factor: {args.activity_factor * 100:.1f}%)...")
+        res = run_first_principles_audit(activity_factor=args.activity_factor)
+        p = res["power"]
+        a = res["area"]
+        print("\n" + "=" * 80)
+        print("  PROJECT JANUS MINI-16: FIRST-PRINCIPLES POWER & AREA SUMMARY")
+        print("=" * 80)
+        print(f"  Die Footprint:                {a['die_dimensions_mm']} mm ({a['total_die_area_mm2']} mm^2)")
+        print(f"  Total Power Draw:             {p['total_power_W']} W ({p['total_power_mW']} mW)")
+        print(f"    - Laser Electrical Power:   {p['subsystems_mW']['Optical Source']} mW")
+        print(f"    - 100-GHz RF Modulators:    {p['subsystems_mW']['Electro-Optics']} mW")
+        print(f"    - SAC2M Ge/Si APD Array:    {p['subsystems_mW']['Optoelectronics']} mW")
+        print(f"    - 65nm CMOS Base Logic:     {p['subsystems_mW']['65nm CMOS Digital']} mW")
+        print(f"    - 1.5 MB SRAM & ROM:        {p['subsystems_mW']['65nm CMOS Memory']} mW")
+        print(f"  Active Tile Array Core:       {a['tile_array_core_mm2']} mm^2 ({a['tile_array_core_pct']}% of die)")
+        print(f"  Report exported to:           {res['reports']['md_path']}")
+        print("=" * 80)
+        sys.exit(0)
+
+    # 1. Monolithic Dynamic Co-Simulation
+    if args.monolithic:
+        print("Starting Monolithic Dynamic Multi-Physics Co-Simulation...")
+        res = orchestrator.run_monolithic_dynamic_cosim(sim_time_ps=args.sim_time_ps)
+        m = res["metrics"]
+        a = res["algorithmic"]
+        print("\n" + "=" * 80)
+        print("  PROJECT JANUS: MONOLITHIC DYNAMIC CO-SIMULATION SUMMARY")
+        print("=" * 80)
+        print(f"  Execution Time:               {res['elapsed_time_s']:.3f} s")
+        print(f"  Transmitted Bits:             {m['transmitted_bits']}")
+        print(f"  Dynamic Optical Margin:       {m['nominal_baseline_margin_dB']} dB (Target: >= +5.0 dB)")
+        print(f"  Received Power (Mean ON):     {m['p_rx_mean_on_uW']} uW (Sensitivity: {m['p_sens_uW']} uW)")
+        print(f"  Peak Operating Temp:          {m['t_peak_C']} C (Ceiling: <= 70.0 C)")
+        print(f"  Max Optical H-Tree Skew:      {m['skew_max_fs']} fs (Budget: <= 100.0 fs)")
+        print(f"  Dynamic Eye Opening:          {m['eye_opening_pct']} %")
+        print(f"  Dynamic Measured BER:         {m['ber_measured']}")
+        print(f"  64-Bit Product Match:         {a['product_match']} ({a['product_ref']} == {a['recovered_product']})")
+        print(f"  RRNS Fault Self-Healing:      {a['rrns_healed']} (Corrected: {a['corrected_count']} channels)")
+        print("=" * 80)
+        sys.exit(0 if a["product_match"] and m["pass_link_margin"] else 1)
 
     # 1. Custom Single Value
     if args.val is not None:

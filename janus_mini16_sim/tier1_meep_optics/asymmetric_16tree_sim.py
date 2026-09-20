@@ -51,6 +51,44 @@ class Asymmetric16TreeCore:
         t_flight_s = (total_length_um * 1e-6) / v_group
         return t_flight_s * 1e12
 
+    def evaluate_htree_optical_skew(
+        self,
+        die_size_mm: float = 10.0,
+        delta_w_nm: float = 3.0,
+        delta_L_etch_um: float = 1.5,
+    ) -> Dict[str, float]:
+        """
+        Edge Case 29: Optical H-Tree Clock Skew Across 10 mm Die Area.
+        Delta_t_skew = (Delta_n_g * L_path) / c + (n_g * Delta_L_etch) / c
+        """
+        c_speed = 3.0e8
+        n_g = self.specs.group_index
+        L_path_m = (die_size_mm * 1e-3)  # Maximum corner-to-corner H-tree branch length
+
+        # Group index sensitivity to waveguide width: dn_g/dw ~ 0.0007 / nm
+        dn_g_dw_per_nm = 0.0007
+        delta_n_g = dn_g_dw_per_nm * delta_w_nm
+
+        # Dispersion and geometric skew components
+        t_dispersion_s = (delta_n_g * L_path_m) / c_speed
+        t_etch_s = (n_g * (delta_L_etch_um * 1e-6)) / c_speed
+        t_skew_total_s = t_dispersion_s + t_etch_s
+        t_skew_total_fs = t_skew_total_s * 1e15
+
+        t_guard_ps = 3.5  # System inter-pulse guard interval
+        skew_to_guard_pct = (t_skew_total_s / (t_guard_ps * 1e-12)) * 100.0
+
+        return {
+            "die_size_mm": float(die_size_mm),
+            "delta_w_nm": float(delta_w_nm),
+            "delta_n_g": float(delta_n_g),
+            "t_dispersion_fs": float(t_dispersion_s * 1e15),
+            "t_etch_fs": float(t_etch_s * 1e15),
+            "t_skew_total_fs": float(t_skew_total_fs),
+            "skew_to_guard_pct": float(skew_to_guard_pct),
+            "is_clock_skew_tolerable": bool(t_skew_total_fs <= 120.0),
+        }
+
     def simulate_pulse(self, x: int, w: int, modulus: int = None) -> Dict:
         """
         Propagates a unit optical pulse (1.0 mW = 0 dBm) for input X (0..16) through 
@@ -151,6 +189,49 @@ class Asymmetric16TreeCore:
             "flight_delay_ps": self.get_physical_delay_ps(),
             "is_zero_gated": False,
             "correct": correct
+        }
+
+    def evaluate_htree_optical_skew(
+        self,
+        L_die_mm: float = 10.0,
+        delta_w_nm: float = 3.0,
+        w_nominal_nm: float = 450.0,
+        dn_g_dw_per_nm: float = 0.0012,
+        n_g_nominal: float = 2.45,
+    ) -> dict:
+        r"""
+        EDGE CASE 29: OPTICAL H-TREE SKEW ACROSS 10 MM DIE AREA
+        =======================================================
+        Evaluates optical clock / pulse arrival time skew across the 16 tiles:
+            \Delta t_{\text{skew}} = \frac{\Delta n_g \cdot L}{c} \approx 40\text{--}80\,\text{fs}
+
+        Physical Phenomenon:
+          Waveguide fabrication width gradients (\Delta w = 3 nm across a 10 mm die)
+          shift the group index n_g through waveguide dispersion:
+            \Delta n_g = (dn_g / dw) \cdot \Delta w
+          In a balanced H-tree distribution network, the branch length from die center
+          to the tile perimeter is L_branch = L_die / 2 = 5.0 mm.
+          The worst-case differential arrival time across balanced H-tree branches is:
+            \Delta t_{\text{skew}} = (\Delta n_g \cdot L_{\text{branch}}) / c \approx 60.0\,\text{fs}
+        """
+        L_branch_m = (L_die_mm * 1e-3) / 2.0
+        c = 2.99792458e8
+
+        delta_n_g = dn_g_dw_per_nm * delta_w_nm
+        delta_t_skew_s = (delta_n_g * L_branch_m) / c
+        delta_t_skew_fs = delta_t_skew_s * 1e15
+
+        is_skew_tolerable = bool(delta_t_skew_fs < 100.0)
+
+        return {
+            "L_die_mm": float(L_die_mm),
+            "L_branch_mm": float(L_die_mm / 2.0),
+            "delta_w_nm": float(delta_w_nm),
+            "delta_n_g": float(delta_n_g),
+            "delta_t_skew_fs": float(delta_t_skew_fs),
+            "delta_t_skew_ps": float(delta_t_skew_s * 1e12),
+            "skew_budget_fs": 100.0,
+            "is_skew_tolerable": is_skew_tolerable,
         }
 
     def run_exhaustive_verification(self) -> dict:

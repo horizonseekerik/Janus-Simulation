@@ -406,13 +406,14 @@ P_laser_electrical: float = 2.95  # Laser electrical consumption (W) [T3]
 N_mmi_stages: int = 13  # Cascaded 1:2 MMI splitter count [T1]
 L_split_per_stage: float = 3.0103  # Ideal per-stage splitting loss (dB) [T1]
 L_split_ideal: float = 39.13  # Total ideal splitting loss (dB) [T1]
-L_mmi_excess_per_stage_baseline: float = 0.290  # Baseline MMI excess loss per stage (dB) [T1]
-L_mmi_excess_per_stage: float = 0.140  # Optimized 1:2 MMI excess loss per stage (dB, -51.7% cut) [T1]
-L_mmi_excess_total: float = 1.82  # Total 13-stage optimized MMI excess loss (13 x 0.140 dB) [T1]
+L_mmi_excess_per_stage_baseline: float = 0.144  # Baseline MMI excess loss per stage (dB) [T1] (Canonical 7.00 um taper)
+L_mmi_excess_per_stage_legacy_ref: float = 0.290  # Legacy reference unoptimized MMI loss per stage (dB) [T1] (4.50 um taper)
+L_mmi_excess_per_stage: float = 0.144  # Canonical baseline 1:2 MMI excess loss per stage (dB) [T1]
+L_mmi_excess_total: float = 1.87  # Total 13-stage baseline MMI excess loss (13 x 0.144 dB) [T1]
 mmi_1x2_W_um: float = 2.80  # 1:2 MMI cavity width (um)
 mmi_1x2_L_um: float = 12.40  # 1:2 MMI cavity length (um)
-mmi_1x2_L_taper_um: float = 7.00  # Optimized adiabatic taper length (um, was 4.50 um)
-mmi_1x2_w_tap_um: float = 1.25  # Optimized taper junction width (um, was 1.15 um)
+mmi_1x2_L_taper_um: float = 7.00  # Baseline adiabatic taper length (um)
+mmi_1x2_w_tap_um: float = 1.25  # Baseline taper junction width (um)
 mmi_1x2_y_out_um: float = 0.70  # Twin Talbot self-image centers at output facet (um)
 # L_benes_per_stage: float = 0.50  # LEGACY: Dilated Benes loss per stage (dB) [T1]
 # L_benes_total: float = 7.50  # LEGACY: Total 15-stage Benes loss (dB) [T1]
@@ -509,6 +510,21 @@ SNR_analog_32x32: float = 126.4  # Minimum analog SNR for 32x32 (dB) [T5]
 ADC_bits_32x32: int = 21  # Equivalent ADC resolution (bits) [T5]
 dB_per_bit: float = 6.02  # ADC SNR scaling constant (dB/bit) [T5]
 SNR_adc_floor: float = 1.76  # ADC SNR floor offset (dB) [T5]
+
+
+# ==============================================================================
+# 2.26 UNIFIED BASELINE OPTICAL LINK BUDGET (ALL 32 PHYSICAL EDGE CASES AS BASELINE)
+# ==============================================================================
+# The 32 higher-order physical edge cases (Cases 1 to 32) represent the inescapable
+# physical baseline of the operating hardware (100 GHz RF skin effect, velocity walk-off,
+# dielectric loss, APD dead-space, thermal boundary jumps, laser RIN, and RDF).
+L_32_edge_cases_baseline_dB: float = 2.80  # Cumulative 32-case physical multi-physics penalty (dB)
+P_rx_baseline_dBm: float = -19.44  # Baseline delivered optical power at APD (dBm) with all 32 edge cases (11.38 uW)
+P_rx_baseline_uW: float = 11.38  # Baseline delivered optical power at APD (uW)
+P_sens_strongarm_dBm: float = -25.05  # StrongARM latch decision sensitivity (dBm) (3.13 uW)
+P_sens_strongarm_uW: float = 3.13  # StrongARM latch decision sensitivity (uW)
+M_opt_baseline_dB: float = 5.61  # Nominal baseline optical link margin (dB) with all 32 edge cases (> 3.63x photon flux)
+photon_flux_margin_factor: float = 3.635  # Clean photon flux factor above StrongARM decision sensitivity threshold
 
 
 # ==============================================================================

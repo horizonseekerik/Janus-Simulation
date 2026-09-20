@@ -1,0 +1,59 @@
+# ==============================================================================
+# PROJECT JANUS: 100% UNCOMPROMISED 3D MULTI-PHYSICS CLOUD HPC CONTAINER
+# Base: Ubuntu 22.04 LTS with OpenMPI, CUDA 12, MEEP, Gmsh, Elmer FEM, and Xyce
+# ==============================================================================
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Etc/UTC
+
+# 1. System dependencies and build toolchain
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gfortran \
+    cmake \
+    git \
+    wget \
+    curl \
+    ca-certificates \
+    libopenmpi-dev \
+    openmpi-bin \
+    libblas-dev \
+    liblapack-dev \
+    libhdf5-openmpi-dev \
+    libgsl-dev \
+    libfftw3-mpi-dev \
+    gmsh \
+    python3-meep \
+    python3-pip \
+    python3-dev \
+    python3-numpy \
+    python3-scipy \
+    python3-matplotlib \
+    && rm -rf /var/lib/apt/lists/*
+
+# 2. Elmer FEM installation
+RUN apt-get update && apt-get install -y --no-install-recommends software-properties-common \
+    && apt-add-repository -y ppa:elmer-community/elmer-nightly \
+    && apt-get update && apt-get install -y --no-install-recommends \
+    elmerfem-csc \
+    && rm -rf /var/lib/apt/lists/*
+
+# 3. Python HPC packages
+RUN pip3 install --no-cache-dir \
+    pytest \
+    gdsfactory \
+    gdstk \
+    pandas \
+    h5py \
+    mpi4py \
+    z3-solver \
+    cocotb
+
+# 4. Set working directory and environment variables
+WORKDIR /workspace/janus
+ENV PYTHONPATH="/workspace/janus:/workspace/janus/janus_mini16_sim"
+ENV OMPI_ALLOW_RUN_AS_ROOT=1
+ENV OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+
+CMD ["/bin/bash"]

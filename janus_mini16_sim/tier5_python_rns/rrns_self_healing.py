@@ -32,6 +32,37 @@ class RRNSSelfHealingEngine:
         self.full_moduli = self.mod_info["moduli_full"]
         self.M_compute = self.mod_info["M_total"]
 
+    def reconstruct_with_recovery(self, residues: list) -> tuple:
+        """
+        Reconstructs value from 18 RRNS residues (16 compute + 2 redundant),
+        automatically detecting and correcting single-channel errors via projection decoding.
+        Returns: (recovered_value, corrected_count)
+        """
+        if len(residues) < 18:
+            return crt_reconstruct(residues[:16], self.compute_moduli[:len(residues)]), 0
+
+        X_cand = crt_reconstruct(residues[:16], self.compute_moduli)
+        mismatch_0 = X_cand % self.redundant_moduli[0] != residues[16]
+        mismatch_1 = X_cand % self.redundant_moduli[1] != residues[17]
+
+        if not mismatch_0 and not mismatch_1:
+            return X_cand, 0
+
+        # Attempt projection elimination across 16 compute channels
+        for suspect in range(16):
+            rem_comp_idx = [i for i in range(16) if i != suspect]
+            X_test = crt_reconstruct(
+                [residues[i] for i in rem_comp_idx],
+                [self.compute_moduli[i] for i in rem_comp_idx],
+            )
+            if (X_test % self.redundant_moduli[0] == residues[16]) and (
+                X_test % self.redundant_moduli[1] == residues[17]
+            ):
+                return X_test, 1
+
+        # If no compute channel matched, error was in redundant channels
+        return X_cand, 1
+
     def run_fault_injection_trials(
         self, N_trials: int = 10000, error_probability: float = 0.20
     ) -> Dict[str, Any]:
