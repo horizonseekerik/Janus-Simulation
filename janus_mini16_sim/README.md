@@ -185,3 +185,147 @@ python janus_mini16_sim/run_mini16_full_cosim.py --interactive
 # Run all AI layer benchmarks & GPU comparisons
 python janus_mini16_sim/benchmarks/run_ai_profiling.py --all
 ```
+
+### 5. Run First-Principles Analytical Power & Area Model
+```bash
+# Execute first-principles analytical energy and area validation
+python janus_mini16_sim/benchmarks/first_principles_power_and_area.py
+```
+
+### 6. Run Dynamic Monolithic Closed-Loop Co-Simulation
+```bash
+# Run closed-loop transient thermal and optical co-simulation
+python janus_mini16_sim/orchestrator/monolithic_dynamic_cosim.py
+```
+
+### 7. Run Automated Pytest Suites Across All Tiers
+```bash
+# Run full simulation test suite
+pytest janus_mini16_sim/ -v
+
+# Run individual tier test suites
+pytest janus_mini16_sim/tier1_meep_optics/test_tier1_all.py -v
+pytest janus_mini16_sim/tier2_elmer_thermal/test_tier2_all.py -v
+pytest janus_mini16_sim/tier3_xyce_circuit/test_tier3_all.py -v
+pytest janus_mini16_sim/tier4_rtl_digital/test_tier4_all.py -v
+pytest janus_mini16_sim/tier5_python_rns/test_tier5_all.py -v
+```
+
+### 8. Cloud & Azure HPC Cluster Execution
+For running 100% full-mesh 3D FDTD and FEM solvers on high-performance cloud clusters:
+- **Azure HPC**: See `janus_mini16_sim/azure_hpc/azure_deploy_run.sh` and `Dockerfile.azure_hpc`.
+- **Google Cloud (GCP)**: See `janus_mini16_sim/cloud_hpc/gcp_production_orchestrator.sh` and `Dockerfile.cloud_hpc`.
+
+---
+
+## 📂 Simulation Directory Structure
+
+```
+janus_mini16_sim/
+├── run_mini16_full_cosim.py               # Master CLI co-simulation test suite runner
+├── check.py                               # Sb2S3 directional coupler cell verification check
+├── AI_BENCHMARK_REPORT.md                 # Layer-by-layer AI benchmarking data report
+├── requirements.txt                       # Python dependencies for the simulation framework
+├── README.md                              # Simulation framework overview & execution guide
+│
+├── configs/                               # Hardware Constants & Architectural Specs
+│   ├── mini_16t_constants.py              # Physical parameters (materials, losses, 16-tree specs)
+│   ├── mini_16t_specs.json                # JSON specification dictionary for 16-tile MVP
+│   └── moduli.json                        # Dynamic coprime moduli sets & optical cluster config
+│
+├── layout/                                # Physical Mask Layout & Micro-Packaging (GDS II)
+│   ├── generate_mini16_gds.py             # Automated 3D monolithic photonic top-die GDS II synthesizer
+│   ├── generate_cmos_base_gds.py          # Automated 65nm CMOS digital base-die GDS II synthesizer
+│   ├── janus_layer_constants.py           # Unified physical mask layer constants & canonical dimensions
+│   ├── janus_mini16_layout.gds            # 16-Tile monolithic 3D top-die GDS II stream file (955 KB)
+│   ├── janus_mini16_cmos_base_layout.gds  # 65nm LP/GP CMOS base-die GDS II stream file (169 KB)
+│   ├── janus_mini16_layout.lyp            # Top-die KLayout layer properties & styling file
+│   ├── janus_mini16_cmos_base_layout.lyp  # CMOS base-die KLayout layer properties file
+│   └── README.md                          # Layout & packaging architectural specification
+│
+├── tier1_meep_optics/                     # TIER 1: Photonic FDTD & Waveguide Solvers
+│   ├── asymmetric_16tree_sim.py           # 4-stage binary 16-Tree Fermat optical core solver
+│   ├── sb2s3_switch_cell.py               # 3D FDTD Sb2S3 directional coupler model
+│   ├── mmi_1x2_splitter.py                # Optimized 1:2 MMI splitter tapers (parabolic profile)
+│   ├── waveguide_crossing.py              # MEEP 2D FDTD waveguide crossing solver
+│   ├── litao3_pockels_router.py           # 100 GHz electro-optic LiTaO3 Pockels modulator
+│   ├── sb2s3_tolerance_monte_carlo.py     # Sb2S3 fabrication tolerance Monte Carlo analysis
+│   ├── monte_carlo_tolerance.py           # Statistical tolerance analyzer
+│   ├── export_touchstone.py               # S-parameter Touchstone (.s4p) exporter
+│   ├── export_heat_map.py                 # Optical dissipation Q_opt(x,y,z) heat exporter
+│   └── test_tier1_all.py                  # Pytest automated test harness for Tier 1
+│
+├── tier2_elmer_thermal/                   # TIER 2: 3D FEM Thermal & 1D Heat Diffusion Solvers
+│   ├── elmer_thermal_solver.py            # Elmer 3D FEM solver & 1D finite-volume BDF fallback
+│   ├── gmsh_mesh_generator.py             # 3D GMSH tetrahedral mesh generator
+│   ├── extract_thermal_rom.py             # Foster RC thermal reduced-order model (ROM)
+│   ├── case.sif / materials.sif           # Elmer FEM solver input configuration files
+│   └── test_tier2_all.py                  # Pytest automated test harness for Tier 2
+│
+├── tier3_xyce_circuit/                    # TIER 3: Optoelectronic SPICE & APD Circuit Models
+│   ├── apd_receiver_model.py              # Ge/Si SAC2M avalanche photodiode SPICE model
+│   ├── strongarm_latch.py                 # Clocked StrongARM dynamic regenerative latch
+│   ├── eye_diagram_ber.py                 # 100 GHz eye diagram & PRBS-7 BER estimator
+│   ├── vector_fit_s_params.py             # Touchstone S-parameter SPICE macromodeling
+│   ├── ilo_comb_lock.py                   # 50 fs RMS injection-locked optoelectronic clock
+│   ├── optical_switch_sp.cir              # SPICE subcircuit netlist for optical switch
+│   └── test_tier3_all.py                  # Pytest automated test harness for Tier 3
+│
+├── tier4_rtl_digital/                     # TIER 4: Synthesizable Verilog Digital Logic
+│   ├── rns_encoder.v                      # 100 GHz wave-pipelined 64b to 16-residue encoder
+│   ├── crt_adder_tree.v                   # 12-stage pipelined Mixed-Radix CRT adder tree
+│   ├── jir_fault_monitor.v                # Real-time RRNS fault parity checker
+│   ├── rom_macros.v                       # Precomputed CRT Mixed-Radix constant ROM macros
+│   ├── janus_tier4_top.v                  # Top-level integrated Tier 4 digital subsystem
+│   ├── janus_tier4_top.sdc                # Timing constraints for 100 GHz wave-pipelined logic
+│   ├── janus_moduli_params.vh             # Moduli parameters Verilog header
+│   ├── generate_moduli_constants.py       # Automated Verilog ROM constants generator
+│   ├── rtl_synthesis_analyzer.py          # Area, timing, and cell-count synthesis analyzer
+│   ├── synth.ys                           # Yosys open-source synthesis script
+│   ├── tb_crt_adder_tree.v                # Cycle-accurate Verilog testbench
+│   ├── tb_crt_standalone.v                # Standalone CRT testbench
+│   ├── tb_rns_standalone.v                # Standalone RNS encoder testbench
+│   ├── tb_jir_fault_injection.v           # Real-time fault injection testbench
+│   ├── tb_audit_stress.v                  # 1000-vector stress testbench
+│   ├── test_crt_cocotb.py                 # Cocotb randomized Python/Verilog co-simulation
+│   └── test_tier4_all.py                  # Pytest automated test harness for Tier 4
+│
+├── tier5_python_rns/                      # TIER 5: Formal Z3 Math & AI Workload Benchmarks
+│   ├── formal_verifier.py                 # Z3 SMT solver formal mathematical precision proofs (5 Proofs)
+│   ├── moduli_generator.py                # Dynamic coprime moduli set generator & RNS core arithmetic
+│   ├── spatial_one_hot_router.py          # Spatial One-Hot tensor routing & dynamic tile allocation
+│   ├── benchmark_16tree_gemm.py           # 16-Tree Fermat GEMM execution benchmarks
+│   ├── gemm_exact_benchmark.py            # Exact 64-bit matrix multiplication test harness
+│   ├── rrns_self_healing.py               # Redundant RNS single-channel fault correction
+│   ├── jir_thermal_scheduler.py           # Closed-loop thermal swapping & modulus rotation
+│   ├── ai_workload_benchmarks.py          # LLaMA-3, GPT-2, and ViT layer profiler
+│   ├── batch_token_packer.py              # Spatial multi-head attention batching engine
+│   ├── gpu_comparator.py                  # Energy/area comparative analysis vs GPUs
+│   └── test_tier5_all.py                  # Pytest automated test harness for Tier 5
+│
+├── orchestrator/                          # Multi-Physics Co-Simulation Orchestrator
+│   ├── master_orchestrator.py             # 16-point sign-off matrix execution manager
+│   ├── monolithic_dynamic_cosim.py        # Closed-loop dynamic multi-physics co-simulator
+│   ├── test_orchestrator.py               # Master orchestrator test suite
+│   ├── test_monolithic_cosim.py           # Dynamic co-simulation test suite
+│   └── artifacts/                         # Generated plots, reports, S-matrices, and JSON logs
+│       ├── JANUS_MINI16_VERIFICATION_REPORT.md # Official markdown verification sign-off report
+│       └── janus_mini16_verification_report.json # Machine-readable verification results
+│
+├── benchmarks/                            # AI Benchmarking & Profiling Scripts
+│   ├── run_ai_profiling.py                # Standalone AI workload evaluation runner
+│   ├── export_simulation_field_plots.py   # Visual wave & thermal field plot generator
+│   ├── first_principles_power_and_area.py # First-principles analytical power and area model
+│   ├── test_ai_profiling.py               # Benchmark test suite
+│   ├── test_batch_packing.py              # Token packing validation harness
+│   └── test_first_principles_power_and_area.py # First-principles benchmark test harness
+│
+├── azure_hpc/                             # Azure Cloud HPC Simulation Infrastructure
+│   ├── Dockerfile.azure_hpc               # Production container for Azure HPC multi-node clusters
+│   └── azure_deploy_run.sh                # Deployment and automated execution script
+│
+└── cloud_hpc/                             # Google Cloud (GCP) HPC Infrastructure
+    ├── Dockerfile.cloud_hpc               # Full multi-physics container image
+    ├── gcp_canary_startup.sh              # Single-instance canary validation runner
+    └── gcp_production_orchestrator.sh     # Production HPC batch orchestration script
+```
