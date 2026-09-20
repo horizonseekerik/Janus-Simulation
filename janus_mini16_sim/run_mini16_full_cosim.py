@@ -151,7 +151,7 @@ def main():
         "--power-area",
         action="store_true",
         default=False,
-        help="Execute First-Principles Power Draw and Physical Die Area Audit (100% component activity)",
+        help="Execute First-Principles Power Draw and Physical Die Area Audit (100%% component activity)",
     )
     parser.add_argument(
         "--activity-factor",
