@@ -12,7 +12,10 @@ Executes 5 Independent Verification Testbenches:
 
 import subprocess
 import os
+import sys
 import shutil
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 try:
     import pytest
 except ImportError:

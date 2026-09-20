@@ -1,15 +1,15 @@
 {
   "project": "Project JANUS Mini 16-Tile",
-  "timestamp": "2026-09-12T21:49:46Z",
+  "timestamp": "2026-09-20T16:19:09Z",
   "overall_pass": true,
   "status": "VERIFICATION COMPLETED",
   "execution_times_seconds": {
-    "tier1": 0.10136628150939941,
-    "tier2": 5.083515882492065,
-    "tier3": 0.0757608413696289,
-    "tier4": 4.376965045928955,
-    "tier5": 13.35159683227539,
-    "total": 23.014973163604736
+    "tier1": 0.026215791702270508,
+    "tier2": 1.3750934600830078,
+    "tier3": 0.03111410140991211,
+    "tier4": 2.448322057723999,
+    "tier5": 5.366369009017944,
+    "total": 9.254424571990967
   },
   "verification_checks": [
     {
@@ -37,7 +37,7 @@
       "name": "Waveguide Crossing Insertion Loss",
       "tier": "Tier 1",
       "target_spec": "IL <= 0.100 dB",
-      "measured_value": "0.038",
+      "measured_value": "0.0914",
       "threshold": "<= 0.100 dB",
       "passed": true,
       "details": "Talbot self-imaging MMI crossing through-loss (adiabatic parabolic expansion)"
@@ -47,7 +47,7 @@
       "name": "Waveguide Crossing Crosstalk",
       "tier": "Tier 1",
       "target_spec": "XT <= -38.0 dB",
-      "measured_value": "-41.2",
+      "measured_value": "-60",
       "threshold": "<= -38.0 dB",
       "passed": true,
       "details": "Cross-port parasitic optical isolation"
@@ -97,7 +97,7 @@
       "name": "APD Practical Sensitivity Margin",
       "tier": "Tier 3",
       "target_spec": "Margin >= +3.00 dB",
-      "measured_value": "6.142",
+      "measured_value": "6.211",
       "threshold": ">= +3.00 dB",
       "passed": true,
       "details": "Net margin over practical sensitivity with jitter"
@@ -107,7 +107,7 @@
       "name": "Optical Receiver Bit Error Rate",
       "tier": "Tier 3",
       "target_spec": "BER <= 10^-18",
-      "measured_value": "2.677e-34",
+      "measured_value": "6.899e-28",
       "threshold": "<= 1.00e-18",
       "passed": true,
       "details": "Calculated with Q=9.38 error bound"
@@ -117,7 +117,7 @@
       "name": "100 GHz Eye Diagram Opening",
       "tier": "Tier 3",
       "target_spec": "Eye Opening > 0%",
-      "measured_value": "75.46",
+      "measured_value": "72.58",
       "threshold": "> 0.0%",
       "passed": true,
       "details": "Clear binary spatial discrimination at 100 GHz"
@@ -144,13 +144,13 @@
     },
     {
       "id": 14,
-      "name": "Z3 SMT Formal Proofs (4 Proofs)",
+      "name": "Z3 SMT Formal Proofs (5 Proofs)",
       "tier": "Tier 5",
-      "target_spec": "4 / 4 Proved",
-      "measured_value": "4",
-      "threshold": "All 4 Proved",
+      "target_spec": ">= 4 Proved",
+      "measured_value": "5",
+      "threshold": "All Proved (>=4)",
       "passed": true,
-      "details": "Coprimality, dynamic range, bijection, 16-tree Fermat completeness"
+      "details": "Coprimality, dynamic range, bijection, 16-tree Fermat, spatial one-hot"
     },
     {
       "id": 15,

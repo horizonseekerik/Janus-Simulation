@@ -90,6 +90,12 @@ def main():
         help="Simulation tier to execute (1-5 or 'all' for full co-simulation)",
     )
     parser.add_argument(
+        "--all",
+        action="store_true",
+        default=False,
+        help="Execute all simulation tiers (full 5-tier multi-physics co-simulation)",
+    )
+    parser.add_argument(
         "--val",
         type=str,
         default=None,
@@ -231,7 +237,7 @@ def main():
         sys.exit(0)
 
     # 4. Standard Tier / Full Co-Sim Execution
-    tier_choice = args.tier or "all"
+    tier_choice = "all" if args.all else (args.tier or "all")
     if tier_choice == "all":
         results = orchestrator.run_full_cosim()
         if args.report and os.path.exists(results["report_path"]):
