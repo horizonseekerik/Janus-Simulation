@@ -111,15 +111,21 @@ class Asymmetric16TreeCore:
         else:
             expected_val = (x * w) % modulus
 
-        # Zero-Skipping: X = 0 (No optical pulse fired, dark channel)
+        # Zero-Skipping: X = 0 (Laser gated off, dark channel evaluation)
         if x == 0:
+            # Physical electro-absorption modulator extinction ratio / laser gating extinction
+            eam_extinction_db = 45.0  # dB laser gating extinction
+            p_in = getattr(self, "P_in_mw", 1.0)
+            dark_leakage_mw = p_in * (10.0 ** (-eam_extinction_db / 10.0))
             return {
                 "x": 0, "w": w,
                 "output_channel": 0,
                 "expected_val": expected_val,
                 "peak_power_mw": 0.0,
-                "total_loss_db": float('inf'),
-                "snr_db": float('inf'),
+                "dark_leakage_mw": dark_leakage_mw,
+                "total_loss_db": eam_extinction_db,
+                "snr_db": eam_extinction_db,
+                "dark_isolation_db": eam_extinction_db,
                 "flight_delay_ps": 0.0,
                 "is_zero_gated": True,
                 "correct": (expected_val == 0)

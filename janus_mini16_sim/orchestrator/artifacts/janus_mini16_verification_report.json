@@ -1,15 +1,15 @@
 {
   "project": "Project JANUS Mini 16-Tile",
-  "timestamp": "2026-09-20T16:32:32Z",
+  "timestamp": "2026-09-20T17:47:03Z",
   "overall_pass": true,
   "status": "VERIFICATION COMPLETED",
   "execution_times_seconds": {
-    "tier1": 0.024603605270385742,
-    "tier2": 1.212693214416504,
-    "tier3": 0.039507389068603516,
-    "tier4": 2.0302951335906982,
-    "tier5": 6.008918762207031,
-    "total": 9.329657077789307
+    "tier1": 0.016284704208374023,
+    "tier2": 1.0645875930786133,
+    "tier3": 0.016645431518554688,
+    "tier4": 1.7805304527282715,
+    "tier5": 2.2836380004882812,
+    "total": 5.161686182022095
   },
   "verification_checks": [
     {
@@ -107,7 +107,7 @@
       "name": "Optical Receiver Bit Error Rate",
       "tier": "Tier 3",
       "target_spec": "BER <= 10^-18",
-      "measured_value": "6.052e-36",
+      "measured_value": "3.376e-56",
       "threshold": "<= 1.00e-18",
       "passed": true,
       "details": "Calculated with Q=9.38 error bound"
@@ -117,7 +117,7 @@
       "name": "100 GHz Eye Diagram Opening",
       "tier": "Tier 3",
       "target_spec": "Eye Opening > 0%",
-      "measured_value": "76.06",
+      "measured_value": "81.1",
       "threshold": "> 0.0%",
       "passed": true,
       "details": "Clear binary spatial discrimination at 100 GHz"
@@ -146,9 +146,9 @@
       "id": 14,
       "name": "Z3 SMT Formal Proofs (5 Proofs)",
       "tier": "Tier 5",
-      "target_spec": ">= 4 Proved",
+      "target_spec": "== 5 Proved",
       "measured_value": "5",
-      "threshold": "All Proved (>=4)",
+      "threshold": "All 5 Proved",
       "passed": true,
       "details": "Coprimality, dynamic range, bijection, 16-tree Fermat, spatial one-hot"
     },

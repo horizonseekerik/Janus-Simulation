@@ -67,13 +67,20 @@ class EyeDiagramAndBERSolver:
         F = self.apd.F
         R = self.apd.R
 
-        S_I_1 = 2.0 * q * (2.0 * self.P_det * R) * (M**2) * F + 2.0 * q * self.apd.I_dark
-        S_I_0 = 2.0 * q * self.apd.I_dark
+        # Dark current spectral density with avalanche excess noise scaling on multiplied bulk/tunneling components
+        I_surf = getattr(self.apd, "I_surface", 1.0e-9)
+        I_bulk = getattr(self.apd, "I_bulk", 5.0e-9)
+        I_tunn = getattr(self.apd, "I_tunnel", 1.0e-9)
+        S_I_dark = 2.0 * q * (I_surf + (I_bulk + I_tunn) * (M**2) * F)
+
+        S_I_1 = 2.0 * q * (2.0 * self.P_det * R) * (M**2) * F + S_I_dark
+        S_I_0 = S_I_dark
         B_ref = 1.0 / (2.0 * t_int)
         S_I_latch = (self.apd.sigma_latch_noise**2) / B_ref
 
-        sigma_V_1 = math.sqrt((S_I_1 + S_I_latch) * t_int) / C_p
-        sigma_V_0 = math.sqrt((S_I_0 + S_I_latch) * t_int) / C_p
+        # Integrate-and-dump variance for one-sided white noise PSD: Var(Q) = 0.5 * S_I * t_int
+        sigma_V_1 = math.sqrt((S_I_1 + S_I_latch) * 0.5 * t_int) / C_p
+        sigma_V_0 = math.sqrt((S_I_0 + S_I_latch) * 0.5 * t_int) / C_p
 
         # Statistical accumulators across all chunks
         n_chunks = math.ceil(num_bits / chunk_size)

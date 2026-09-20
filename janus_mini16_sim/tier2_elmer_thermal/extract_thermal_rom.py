@@ -34,8 +34,10 @@ class ThermalROMExtractor:
            and copper heat spreaders under full workload power P_total = 6.176 W.
         2. Delta_T_nano_RC(t) is computed by the nanoscale spreading and Kapitza interface RC submodel
            (NanoscaleCellThermalSubmodel), capturing localized switch-level micro-hotspot rise.
-        3. The macroscale steady-state boundary conditions and thermal resistance are verified against
-           genuine 3D Elmer FEM simulation (ElmerGrid + ElmerSolver).
+        3. The macroscale steady-state boundary conditions and thermal resistance R_th_stack are calibrated
+           against 3D Elmer FEM simulation (ElmerGrid + ElmerSolver). Note: Dynamic transient steps use the
+           1D+nano formulation because full 3D transient FEM with 16,384 discrete pulsing heat sources is
+           reserved for cloud HPC runs.
       The 5 poles and modal thermal resistances are fitted via non-linear least squares (scipy.optimize.curve_fit)
       with deterministic ascending time-constant sorting (tau_1 < tau_2 < ... < tau_5) and passivity guarantees.
     """

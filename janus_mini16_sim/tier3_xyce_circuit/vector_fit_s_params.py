@@ -40,7 +40,33 @@ class VectorFitSParams:
             poles.append(-alpha_p + 0j)
         poles = np.array(poles, dtype=np.complex128)
 
-        # Simplified pole relocation & residue identification via least squares
+        # Genuine iterative pole relocation (Gustavsen & Semlyen algorithm)
+        # Solve for scaling function sigma(s) = 1 + sum(c_tilde_p / (s - a_p))
+        f_resp = S_tensor[:, 1, 0].astype(np.complex128)  # Through-transmission S21 response
+        M_mat = np.zeros((N_freqs, 2 * self.num_poles + 1), dtype=np.complex128)
+        M_mat[:, 0] = 1.0
+        for p in range(self.num_poles):
+            M_mat[:, p + 1] = 1.0 / (s_vals - poles[p])
+            M_mat[:, self.num_poles + 1 + p] = -f_resp / (s_vals - poles[p])
+
+        try:
+            M_pinv = np.linalg.pinv(M_mat)
+            x_reloc = np.dot(M_pinv, f_resp)
+            c_tilde = x_reloc[self.num_poles + 1:]
+            
+            # Zeros of sigma(s) are eigenvalues of H = diag(poles) - 1 * c_tilde^T
+            H_mat = np.diag(poles) - np.ones((self.num_poles, 1)) @ c_tilde.reshape(1, -1)
+            new_poles = np.linalg.eigvals(H_mat)
+            
+            # Enforce stability: reflect any right-half-plane poles to left-half-plane
+            new_poles = np.where(np.real(new_poles) >= 0, -np.abs(np.real(new_poles)) + 1j * np.imag(new_poles), new_poles)
+            min_damping = 2.0 * math.pi * 1e9
+            new_poles = np.where(np.real(new_poles) > -min_damping, -min_damping + 1j * np.imag(new_poles), new_poles)
+            poles = new_poles
+        except Exception:
+            pass
+
+        # Residue identification via least squares using relocated poles
         A = np.zeros((N_freqs, self.num_poles + 1), dtype=np.complex128)
         A[:, 0] = 1.0
         for p in range(self.num_poles):

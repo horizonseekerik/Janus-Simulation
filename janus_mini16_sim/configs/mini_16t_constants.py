@@ -111,7 +111,7 @@ P_ghost: float = 0.0  # Parasitic FWM ghost power (W) [T1]
 # ==============================================================================
 # 2.3 OPTICAL MATERIAL REFRACTIVE INDICES & ELECTRO-OPTIC COEFFICIENTS
 # ==============================================================================
-n_si: float = 3.565  # Silicon refractive index at 1064 nm [T1]
+n_si: float = 3.565  # Silicon refractive index at 1064 nm (literature bulk n ~ 3.53-3.565 at 300K; see Green 1995) [T1]
 n_sio2: float = 1.444  # SiO2 cladding refractive index at 1064 nm [T1]
 n_eff_si_strip_1064nm: float = 2.9645  # Fundamental TE effective index for 450x220nm Si strip in SiO2 at 1064nm (MPB-derived EIM convention) [T1]
 n_sin: float = 2.01  # Si3N4 waveguide refractive index at 1064 nm [T1]
@@ -223,7 +223,11 @@ swg_min_feature_size_nm: float = 80.0  # Minimum lithographic feature size (nm) 
 gap_eo_nm: float = 300.0  # LiTaO3 Pockels gap (nm)
 L_active_um: float = 500.0  # LiTaO3 active length (um)
 R_eff: float = 25.0  # Effective resistance (Ohm)
-C_junction: float = 63.66e-15  # Junction capacitance (F) (Note: back-calculated to hit 100 GHz — keep but add honest comment)
+# Ge/Si SACM APD lumped junction capacitance budget (including contact and pad parasitics)
+# for sub-micron active area (~3-5 um diameter). Target budget sized for RC cutoff
+# f_3dB = 1 / (2 * pi * R_eff * C_junction) = 100 GHz with R_eff = 25 Ohm.
+# Literature benchmark: high-speed waveguide Ge/Si SACM APDs achieve 20-70 fF (Kang et al. 2009, Vivien et al. 2012).
+C_junction: float = 63.66e-15  # Target lumped junction capacitance budget (F) [T3]
 
 # ==============================================================================
 # 2.6 MINI 16-TILE ARCHITECTURAL TOPOLOGY (16-Tree Fermat Extension)
@@ -438,7 +442,10 @@ P_total_system: float = 6.17  # Total full-system power (W) [All]
 # ==============================================================================
 # 2.22 TIMING, FREQUENCY & LATENCY BUDGET
 # ==============================================================================
-f_clk: float = 100e9  # System operating clock frequency (100 GHz) [All]
+# Optical pulse repetition rate and wave-pipelined co-simulation slot frequency (100 GHz, 10 ps).
+# Note: Digital CMOS reconstruction logic is synthesized at 1.0 - 3.0 GHz in 7nm FinFET with
+# parallel SIMD channelization (e.g. 32-64 parallel lanes); 10 ps is the optical pulse interval [All].
+f_clk: float = 100e9  # Optical pulse repetition rate / co-sim slot frequency (100 GHz) [All]
 T_cycle: float = 10.0e-12  # Clock cycle period (10.0 ps) [All]
 T_phase: float = 5.0e-12  # Illumination phase duration (5.0 ps) [T1, T3]
 tau_fwhm_min: float = 3.0e-12  # Minimum optical pulse FWHM (s) [T1]

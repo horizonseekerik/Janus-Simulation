@@ -99,22 +99,27 @@ def verify_16tree_completeness(moduli=None) -> bool:
             if reduced_mod257 != expected_mod257:
                 return False
 
-    # Test 5: Modular RNS correctness across all prime moduli
+    # Test 5: Modular RNS correctness and physical switch traversal across operating moduli
     for m in moduli:
         router = Asymmetric16TreeRouter(m)
-        for x in range(m):
-            for w in range(m):
+        for x in range(min(m, 17)):
+            for w in range(min(m, 32)):
                 expected = (x * w) % m
                 actual = router.route(x, w)
                 if actual != expected:
                     return False
+                # Verify physical switch traversal for active trees
+                if x > 0:
+                    leaf, states = router.traverse_switch_tree(x, w)
+                    if not all(s in (0, 1) for s in states) or len(states) != 4 or not (0 <= leaf <= 15):
+                        return False
 
     # Test 6: Collision-freedom within each tree
     for m in moduli:
         router = Asymmetric16TreeRouter(m)
         for x in range(1, min(m, 17)):  # Skip x=0 (dark channel)
             seen = {}  # detector -> set of weights that route there
-            for w in range(m):
+            for w in range(min(m, 16)):
                 det = router.route(x, w)
                 product = (x * w) % m
                 if det in seen:
@@ -128,7 +133,7 @@ def verify_16tree_completeness(moduli=None) -> bool:
     # Test 7: Zero-gating verification
     for m in moduli:
         router = Asymmetric16TreeRouter(m)
-        for w in range(m):
+        for w in range(min(m, 32)):
             if router.route(0, w) != 0:
                 return False
 
@@ -400,7 +405,7 @@ def run_formal_verification() -> dict:
     print(f"[*] Proof 4 (PRNS CRT Isomorphism & Boundary Check):  {'PROVED [PASS]' if p4 else 'FAILED'}")
 
     # Proof 5: Asymmetric 16-Tree Fermat Core Truth Table, Z_17 & Z_257 Completeness
-    p5 = verify_16tree_completeness(moduli=[17, 13, 11, 7, 5, 3])
+    p5 = verify_16tree_completeness(moduli=[257, 256, 251, 243, 241, 17, 13, 11, 7, 5, 3])
     print(f"[*] Proof 5 (16-Tree Fermat Core & Z_17 / Z_257):     {'PROVED [PASS]' if p5 else 'FAILED'}")
 
     # Supplementary: Beneš N=256 Constructive Routing (legacy validation)

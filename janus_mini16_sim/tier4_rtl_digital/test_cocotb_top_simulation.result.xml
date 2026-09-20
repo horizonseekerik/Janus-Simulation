@@ -1,6 +1,2 @@
-<testsuites name="results">
-  <testsuite name="all" package="all">
-    <property name="random_seed" value="1789893339" />
-    <testcase name="test_pipelined_crt_reconstruction" classname="test_crt_cocotb" file="C:\Users\hp\Desktop\Janus Update\janus_mini16_sim\tier4_rtl_digital\test_crt_cocotb.py" lineno="1" time="0.7248320579528809" sim_time_ns="10.171" ratio_time="14.032215998731647" />
-  </testsuite>
-</testsuites>
+<?xml version='1.0' encoding='utf-8'?>
+<testsuites name="cocotb tests"><testsuite name="test_crt_cocotb" errors="0" failures="0" skipped="0" tests="1" time="0.369" timestamp="2026-09-20T12:28:41.477641+00:00" hostname="DESKTOP-56IDVON"><testcase classname="test_crt_cocotb" name="test_pipelined_crt_reconstruction" time="0.369"><properties><property name="cocotb" value="True" /><property name="random_seed" value="1789907320" /><property name="file" value="/mnt/c/Users/hp/Desktop/Deepanshu/Janus Update/janus_mini16_sim/tier4_rtl_digital/test_crt_cocotb.py" /><property name="line" value="23" /><property name="sim_time_unit" value="ns" /><property name="sim_time_start" value="0.0" /><property name="sim_time_stop" value="10.171" /><property name="sim_time_duration" value="10.171" /><property name="sim_time_ratio" value="27.530790892901475" /></properties></testcase></testsuite></testsuites>

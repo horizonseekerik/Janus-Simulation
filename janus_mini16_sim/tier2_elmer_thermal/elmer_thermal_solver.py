@@ -247,89 +247,6 @@ class TransientThermal1D:
             "pass_mesh_convergence": bool(max(errors) < 0.50),  # < 0.5% relative error
         }
 
-    def evaluate_cte_mismatch_birefringence(
-        self,
-        delta_T_K: float = 45.0,
-        E_GPa: float = 200.0,
-        nu: float = 0.25,
-    ) -> Dict[str, float]:
-        """
-        Edge Case 26: Anisotropic CTE Mismatch & Photoelastic Birefringence.
-        sigma_xx = (E / (1 - nu)) * (alpha_LiTaO3 - alpha_Si) * Delta_T
-        Delta_n_biref = -0.5 * n0^3 * (p11 - p12) * sigma_xx
-        """
-        alpha_litao3 = 16.1e-6  # 1/K (LiTaO3 a-axis CTE)
-        alpha_si = 2.6e-6       # 1/K (Si substrate CTE)
-        delta_alpha = alpha_litao3 - alpha_si
-
-        E_Pa = E_GPa * 1e9
-        sigma_thermal_Pa = (E_Pa / (1.0 - nu)) * delta_alpha * delta_T_K
-        sigma_thermal_MPa = sigma_thermal_Pa * 1e-6
-
-        n0 = getattr(cfg, "n_litao3", 2.13)
-        delta_p = 0.08  # Photoelastic tensor difference (p11 - p12)
-        pi_photoelastic = 1e-12  # Pa^-1 stress-optic coefficient
-        delta_n_biref = 0.5 * (n0 ** 3) * delta_p * (sigma_thermal_Pa * pi_photoelastic)
-
-        return {
-            "delta_T_K": float(delta_T_K),
-            "sigma_thermal_MPa": float(sigma_thermal_MPa),
-            "delta_n_birefringence": float(delta_n_biref),
-            "is_birefringence_tolerable": bool(abs(delta_n_biref) < 3.5e-4),
-        }
-
-    def evaluate_kapitza_boundary_resistance(
-        self,
-        Q_diss_W: float = 0.386,
-        A_interface_mm2: float = 6.25,
-        R_K_m2_K_per_W: float = 2.0e-8,
-    ) -> Dict[str, float]:
-        """
-        Edge Case 27: Kapitza Thermal Boundary Resistance (R_K).
-        Delta_T_Kapitza = R_K * (Q_diss / A_interface)
-        """
-        A_interface_m2 = A_interface_mm2 * 1e-6
-        heat_flux_W_per_m2 = Q_diss_W / A_interface_m2
-        delta_T_kapitza_K = R_K_m2_K_per_W * heat_flux_W_per_m2
-
-        return {
-            "heat_flux_W_per_m2": float(heat_flux_W_per_m2),
-            "R_K_m2_K_per_W": float(R_K_m2_K_per_W),
-            "delta_T_kapitza_K": float(delta_T_kapitza_K),
-            "delta_T_kapitza_mK": float(delta_T_kapitza_K * 1e3),
-            "is_kapitza_jump_negligible": bool(delta_T_kapitza_K < 0.005),
-        }
-
-    def evaluate_lateral_thermal_crosstalk(
-        self,
-        pitch_um: float = 1.5,
-        q_line_W_per_m: float = 0.10,
-        L_diff_um: float = 10.0,
-        L_interaction_um: float = 100.0,
-    ) -> Dict[str, float]:
-        """
-        Edge Case 28: Lateral Inter-Waveguide Thermal Crosstalk.
-        Delta_T_lateral = (q_line / (2 * pi * k_sio2)) * K0(r / L_diff)
-        """
-        k_sio2 = getattr(cfg, "k_sio2_thermal", 1.38)
-        r_over_L = pitch_um / L_diff_um
-        # Modified Bessel function K0 approximation for small argument
-        K0_val = -math.log(r_over_L / 2.0) - 0.5772 if r_over_L < 2.0 else math.exp(-r_over_L)
-        delta_T_lateral_K = (q_line_W_per_m / (2.0 * math.pi * k_sio2)) * K0_val
-
-        # Induced thermal phase shift: Delta_phi = k0 * (dn/dT) * Delta_T * L
-        k0 = 2.0 * math.pi / (getattr(cfg, "lambda_0_nm", 1064.0) * 1e-9)
-        dn_dT = getattr(cfg, "dn_dT_si", 1.86e-4)
-        L_m = L_interaction_um * 1e-6
-        delta_phi_rad = k0 * dn_dT * delta_T_lateral_K * L_m
-
-        return {
-            "pitch_um": float(pitch_um),
-            "delta_T_lateral_K": float(delta_T_lateral_K),
-            "delta_phi_lateral_rad": float(delta_phi_rad),
-            "is_thermal_crosstalk_isolated": bool(abs(delta_phi_rad) < 0.005),
-        }
-
     def calculate_sio2_diffusion_time(self) -> float:
         """
         Calculates the thermal diffusion time constant across the monolithic SiO2 buffer layer:
@@ -976,7 +893,8 @@ End
             T_max_K = float(self.T_ambient + delta_T_3d)
             T_max_C = float(T_max_K - 273.15)
             return {
-                "elmer_solver_executed": True,
+                "elmer_solver_executed": False,
+                "dry_run": True,
                 "fidelity": "elmer-3d-fem-dry-run-reference",
                 "mpi_ranks": mpi_ranks,
                 "T_ambient_K": self.T_ambient,
