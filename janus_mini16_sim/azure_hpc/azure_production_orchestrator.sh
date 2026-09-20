@@ -10,15 +10,15 @@ set -euo pipefail
 RESOURCE_GROUP="janus-hpc-rg"
 LOCATION="eastus"
 VM_NAME="janus-hpc-master"
-VM_SIZE="Standard_NV36ads_A10_v5" # 36 vCPUs, 220 GB RAM, NVIDIA A10 GPU (~$0.65/hr Spot)
+VM_SIZE="Standard_D4s_v5" # 4 vCPUs, 16 GB RAM (Matches exact 4-vCPU quota, ~$0.19/hr)
 STORAGE_ACCOUNT="janushpc$(date +%s | tail -c 8)"
 CONTAINER_NAME="results"
 TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
 
 echo "========================================================================"
 echo "  PROJECT JANUS: AZURE HPC 1,000,000-RUN PRODUCTION CAMPAIGN"
-echo "  Target Budget  : < \$3.00 (from \$200 credit)"
-echo "  VM Type        : ${VM_SIZE} (Spot Instance)"
+echo "  Target Budget  : < \$0.25 (from \$200 credit)"
+echo "  VM Type        : ${VM_SIZE} (4 vCPUs, 16 GB RAM)"
 echo "  Region         : ${LOCATION}"
 echo "  Timestamp      : ${TIMESTAMP}"
 echo "========================================================================"
@@ -77,16 +77,13 @@ tar -czvf /opt/janus_1m_results.tar.gz output/ janus_mini16_sim/output/ janus_mi
 echo "[*] All simulations finished successfully!"
 EOF
 
-# 4. Launch Azure Spot VM
-echo "[*] Step 3: Launching Azure Spot VM (${VM_SIZE})..."
+# 4. Launch Azure VM (Standard on-demand 4-vCPU)
+echo "[*] Step 3: Launching Azure VM (${VM_SIZE})..."
 az vm create \
     --resource-group "${RESOURCE_GROUP}" \
     --name "${VM_NAME}" \
     --image Ubuntu2204 \
     --size "${VM_SIZE}" \
-    --priority Spot \
-    --eviction-policy Deallocate \
-    --max-price -1 \
     --admin-username azureuser \
     --generate-ssh-keys \
     --custom-data /tmp/azure_janus_startup.sh \
