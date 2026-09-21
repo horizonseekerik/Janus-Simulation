@@ -804,7 +804,7 @@ class CloudGraphGenerator:
         self.generate_thermal_3d_stratum_slices_plot()
         self.generate_thermal_transient_step_5pole_plot()
         self.generate_thermal_lateral_crosstalk_plot()
-        self.generate_thermal_jir_clamping_dynamics_plot()
+        self.generate_thermal_jir_clamping_plot()
 
         # 4. Generate Category D: OFC 3-Page Publication Dashboards (18-19)
         print("[*] Generating Category D: OFC 3-Page Publication Composite Dashboards (18-19)...")
